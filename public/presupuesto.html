@@ -175,7 +175,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   </header>
 
   <h1 id="title">Armá tu plan</h1>
-  <p class="lead">Elegí cuánto contenido querés por mes y mirá el total. Es un punto de partida: después lo ajustamos juntos.</p>
+  <p class="lead">Elegí cuánto contenido querés por mes y mirá el total. Es un punto de partida: después lo ajusto con vos a lo que necesites.</p>
   <p class="sign">— Tomi</p>
 
   <section aria-labelledby="h-packs">
@@ -200,24 +200,24 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
 
   <section aria-labelledby="h-content">
     <h2 id="h-content">Contenido por mes</h2>
-    <p class="sub">Incluye idea, guion, edición y publicación.</p>
+    <p class="sub">Yo me encargo de la idea, el guion, la edición y la publicación.</p>
     <div id="sliders"></div>
   </section>
 
   <section aria-labelledby="h-extras">
     <h2 id="h-extras">Extras</h2>
-    <p class="sub">Se hacen una sola vez, al empezar.</p>
+    <p class="sub">Los hago una sola vez, al empezar.</p>
     <div id="extras"></div>
-    <p class="incl"><b>Siempre incluido:</b> estrategia base (pilares de contenido, tono y calendario) el primer mes.</p>
+    <p class="incl"><b>Siempre incluyo:</b> la estrategia base (pilares de contenido, tono y calendario) el primer mes.</p>
   </section>
 
   <section aria-labelledby="h-detail">
     <h2 id="h-detail">Tu plan</h2>
     <ul class="detail" id="detail"></ul>
     <ul class="conds">
-      <li>Trabajamos con un mínimo de 3 meses, para que el contenido tenga tiempo de dar resultados.</li>
-      <li>Cada pieza incluye una ronda de cambios.</li>
-      <li>El total se actualiza con el dólar de cada mes.</li>
+      <li>Trabajo con un mínimo de 3 meses, que es el tiempo que el contenido necesita para empezar a dar resultados.</li>
+      <li><b>Una ronda de cambios por pieza:</b> antes de publicar te muestro cada pieza, me marcás de una sola vez todo lo que quieras ajustar (textos, cortes, música, colores) y lo corrijo.</li>
+      <li>El precio queda fijo durante 3 meses y después se actualiza por inflación.</li>
     </ul>
     <div class="actions">
       <button type="button" class="btn solid" id="waBtn">Mandármelo por WhatsApp</button>
@@ -399,7 +399,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     window.open("https://wa.me/?text=" + encodeURIComponent(texto()), "_blank", "noopener");
   });
   $("copyBtn").addEventListener("click", function () {
-    var done = function () { $("copied").textContent = "Copiado. Pegámelo donde quieras."; };
+    var done = function () { $("copied").textContent = "Copiado. Mandámelo por donde te quede cómodo."; };
     if (navigator.clipboard) navigator.clipboard.writeText(texto()).then(done, function () { $("copied").textContent = "No pude copiar; probá con WhatsApp."; });
   });
 
