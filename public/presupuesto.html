@@ -41,7 +41,7 @@
   --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-bottom: 140px; scroll-padding-top: 16px; }
 body {
   margin: 0; background: var(--paper); color: var(--ink);
   font-family: var(--text); font-size: 19px; line-height: 1.45;
@@ -87,9 +87,18 @@ h2 {
 /* Deslizadores */
 .row { padding: 16px 0 18px; border-top: 2px solid var(--ink); }
 .row:last-child { border-bottom: 2px solid var(--ink); }
-.row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.row-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
 .row-name { font-weight: 700; font-size: 20px; }
-.row-val { font-family: var(--display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row-val { font-family: var(--display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 2ch; text-align: center; }
+.stepper { display: flex; align-items: center; gap: 8px; }
+.step {
+  width: 44px; height: 44px; flex: none; border-radius: 50%; cursor: pointer; border: 2px solid var(--ink);
+  background: transparent; display: grid; place-items: center; transition: transform .15s var(--ease), opacity .15s;
+}
+.step svg { width: 16px; height: 16px; }
+.step:active { transform: scale(0.92); }
+.step:disabled { opacity: 0.3; cursor: default; }
+@media (hover: hover) { .step:not(:disabled):hover { border-color: var(--electric); color: var(--electric-text); } }
 .row-note { margin: 2px 0 10px; min-height: 1.45em; color: var(--muted); font-size: 16px; }
 
 input[type="range"] {
@@ -128,7 +137,8 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
 }
 .extra b { font-size: 19px; }
 .extra small { grid-column: 1; font-size: 16px; color: var(--muted); }
-.extra .price { grid-row: 1 / span 2; grid-column: 2; font-family: var(--display); font-size: 22px; }
+.extra .tick { grid-row: 1 / span 2; grid-column: 2; width: 20px; height: 20px; display: none; }
+.extra[aria-pressed="true"] .tick { display: block; }
 .extra[aria-pressed="true"] { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
 .extra[aria-pressed="true"] small { color: var(--on-electric); opacity: 0.85; }
 @media (hover: hover) { .extra:hover { border-color: var(--electric); } }
@@ -151,18 +161,21 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   padding: 12px var(--gutter-r) max(14px, env(safe-area-inset-bottom, 0px)) var(--gutter-l);
   transition: background-color .3s;
 }
-.total-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: 1fr; align-items: end; gap: 4px 12px; }
-.t-label { font-size: 16px; color: var(--muted); grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; }
+.total-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px; }
+.t-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.send { min-height: 52px; padding: 0 20px; white-space: nowrap; }
+.t-label { font-size: 16px; color: var(--muted); display: flex; flex-wrap: wrap; column-gap: 10px; }
 .t-pack { color: var(--electric-text); font-weight: 700; }
-.t-usd { white-space: nowrap; font-family: var(--display); font-size: clamp(36px, 11vw, 56px); line-height: 1; font-variant-numeric: tabular-nums; }
+.t-usd { white-space: nowrap; font-family: var(--display); font-size: clamp(30px, 9.5vw, 56px); line-height: 1; font-variant-numeric: tabular-nums; }
 .t-usd small { font-size: 0.45em; letter-spacing: 0.02em; }
+@media (max-width: 389px) { .t-usd small { display: none; } .send { padding: 0 16px; } }
 .t-ars { text-align: right; font-size: 17px; line-height: 1.3; }
 .t-ars b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
 .bump { animation: bump .35s var(--ease); }
 @keyframes bump { 40% { transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { .bump { animation: none; } * { transition: none !important; } }
 
-.theme:focus-visible, .pack:focus-visible, .btn:focus-visible, .extra:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
+.theme:focus-visible, .pack:focus-visible, .btn:focus-visible, .extra:focus-visible, .step:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
 </style>
 </head>
 <body>
@@ -227,10 +240,13 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   </section>
 </div>
 
-<div class="total" role="status" aria-live="polite">
+<div class="total">
   <div class="total-in">
-    <div class="t-label"><span>Tu plan por mes</span><span class="t-pack" id="tPack"></span></div>
-    <div class="t-usd" id="tUsd"></div>
+    <div class="t-main" role="status" aria-live="polite">
+      <div class="t-label"><span>Tu plan por mes</span><span class="t-pack" id="tPack"></span></div>
+      <div class="t-usd" id="tUsd"></div>
+    </div>
+    <button type="button" class="btn solid send" id="sendBtn">Mandámelo</button>
   </div>
 </div>
 
@@ -250,6 +266,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   ];
   var MESES_EXTRAS = 3;   // los extras se reparten en los 3 meses mínimos
   var MINIMO = 100;       // abono mínimo en USD
+  var WHATSAPP = "";      // tu número con código de país, sin + ni espacios (ej. 5493511234567)
   var DOLAR = 1570;       // dólar por defecto; se cambia con ?dolar=1600 en el link
   var PAQUETES = {
     esencial: { reel: 4, carrusel: 4, historia: 20, extras: [] },
@@ -328,16 +345,25 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   function fill(el) { el.style.setProperty("--pct", ((el.value - el.min) / (el.max - el.min) * 100) + "%"); }
   CONTENIDO.forEach(function (c) {
     var row = document.createElement("div"); row.className = "row";
-    row.innerHTML = '<div class="row-head"><label class="row-name" for="s-' + c.id + '">' + c.nombre + '</label><span class="row-val" id="v-' + c.id + '"></span></div>' +
+    row.innerHTML = '<div class="row-head"><label class="row-name" for="s-' + c.id + '">' + c.nombre + '</label>' +
+      '<div class="stepper"><button type="button" class="step" data-d="-1" aria-label="Menos ' + c.varias + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button>' +
+      '<span class="row-val" id="v-' + c.id + '" aria-hidden="true"></span>' +
+      '<button type="button" class="step" data-d="1" aria-label="Más ' + c.varias + '"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></button></div></div>' +
       '<p class="row-note" id="n-' + c.id + '"></p>' +
       '<input type="range" id="s-' + c.id + '" min="0" max="' + c.max + '" step="1">';
     $("sliders").appendChild(row);
     var input = row.querySelector("input");
     input.addEventListener("input", function () { st[c.id] = +input.value; render(true); });
+    row.querySelectorAll(".step").forEach(function (b) {
+      b.addEventListener("click", function () {
+        st[c.id] = Math.max(0, Math.min(c.max, st[c.id] + (+b.dataset.d))); render(true);
+      });
+    });
   });
   EXTRAS.forEach(function (e) {
     var b = document.createElement("button"); b.type = "button"; b.className = "extra"; b.setAttribute("aria-pressed", "false"); b.dataset.id = e.id;
-    b.innerHTML = "<b>" + e.nombre + "</b><small>" + e.nota + "</small>";
+    b.innerHTML = "<b>" + e.nombre + "</b><small>" + e.nota + "</small>" +
+      '<svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12.5l5 5 10-11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     b.addEventListener("click", function () { st.extras[e.id] = !st.extras[e.id]; render(true); });
     $("extras").appendChild(b);
   });
@@ -348,13 +374,18 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   var budget = $("budget");
   var r10 = function (n) { return Math.ceil(n / 10000) * 10000; };
   budget.min = r10(pesos(MINIMO)); budget.max = r10(pesos(600)); budget.step = 10000; budget.value = r10(pesos(250));
-  function renderBudget() { $("v-budget").textContent = money(+budget.value); fill(budget); }
+  function renderBudget() {
+    $("v-budget").textContent = money(+budget.value); fill(budget);
+    budget.setAttribute("aria-valuetext", money(+budget.value) + " por mes");
+  }
   budget.addEventListener("input", renderBudget);
   $("budgetGo").addEventListener("click", function () {
     var s = bestFor(+budget.value);
     if (!s) { $("fit").textContent = "Con ese monto no llego a armar un plan; probá con un poco más."; return; }
     st = s; render(true);
     $("fit").textContent = "Listo, te armé un plan. Podés ajustarlo abajo.";
+    var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    $("h-content").scrollIntoView({ behavior: calm ? "auto" : "smooth", block: "start" });
   });
 
   var lastTotal = null;
@@ -364,6 +395,9 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
       input.value = n; fill(input);
       $("v-" + c.id).textContent = n;
       $("n-" + c.id).textContent = n ? semana(n) : "Sin " + c.varias;
+      input.setAttribute("aria-valuetext", n + " " + (n === 1 ? c.una : c.varias) + " por mes");
+      var steps = input.parentNode.querySelectorAll(".step");
+      steps[0].disabled = n <= 0; steps[1].disabled = n >= c.max;
     });
     document.querySelectorAll(".extra").forEach(function (b) { b.setAttribute("aria-pressed", st.extras[b.dataset.id] ? "true" : "false"); });
     var pk = samePack(st);
@@ -395,9 +429,11 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     t += "Total: " + money(total(st)) + " por mes.";
     return t;
   }
-  $("waBtn").addEventListener("click", function () {
-    window.open("https://wa.me/?text=" + encodeURIComponent(texto()), "_blank", "noopener");
-  });
+  function enviar() {
+    window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(texto()), "_blank", "noopener");
+  }
+  $("waBtn").addEventListener("click", enviar);
+  $("sendBtn").addEventListener("click", enviar);
   $("copyBtn").addEventListener("click", function () {
     var done = function () { $("copied").textContent = "Copiado. Mandámelo por donde te quede cómodo."; };
     if (navigator.clipboard) navigator.clipboard.writeText(texto()).then(done, function () { $("copied").textContent = "No pude copiar; probá con WhatsApp."; });
