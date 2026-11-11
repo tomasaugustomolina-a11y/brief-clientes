@@ -5,6 +5,7 @@ Formulario móvil, pregunta a pregunta, para conocer a cada cliente antes de arm
 - `public/index.html` y `public/app.js`: el formulario. Link por cliente: `/?c=Nombre+Apellido`.
 - `public/admin.html` y `public/admin.js`: página privada (`/admin`) para ver las respuestas, armar links por cliente y descargar Excel o JSON.
 - `public/preguntas.js`: las preguntas. Se editan acá y las usan las dos páginas.
+- La firma del formulario es el wordmark «~Tomi»: se arma en `firma()` de `public/app.js`, con los estilos `.wm` de `public/index.html`.
 - `src/worker.js` y `src/respuestas.js`: guardan las respuestas en la base D1 `brief-clientes` (Cloudflare).
 
 ## Publicación
