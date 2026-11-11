@@ -1,0 +1,12 @@
+name = "brief-clientes"
+pages_build_output_dir = "./public"
+compatibility_date = "2025-09-01"
+
+[vars]
+# SHA-256 de la contraseña de /admin. Para cambiarla, generá el hash nuevo y reemplazalo acá.
+ADMIN_HASH = "ae09ab60023b2f47f05b676cad43cbd92f6e35212755d9fb40e46d2cb88af4dd"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "brief-clientes"
+database_id = "1ff06bbc-aa6a-45eb-b820-33b9b80a415f"

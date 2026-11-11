@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FFFFFF">
+<title>Brief de marca personal | Tomi</title>
+<meta name="description" content="Unas preguntas cortas para conocerte antes de armar tu estrategia de marca personal.">
+<meta property="og:title" content="Brief de marca personal">
+<meta property="og:description" content="Unas preguntas cortas para conocerte antes de armar tu estrategia de marca personal.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<script>
+  // Tema guardado antes de pintar, para que no parpadee.
+  try { var t = localStorage.getItem("tema"); if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<style>
+/*
+  Identidad Tomi. 60/30/10: papel blanco, tinta negra, azul eléctrico solo donde algo está elegido o avanza.
+  Anton para la pregunta (lo único fuerte de la pantalla), Tinos para todo lo demás.
+  Una pregunta por pantalla, alineada a la izquierda; entra desde abajo como un feed vertical.
+*/
+:root {
+  --paper: #FFFFFF;
+  --ink: #000000;
+  --electric: #2323FF;
+  --on-electric: #FFFFFF;
+  --muted: #5B5B66;
+  --veil: rgba(0, 0, 0, 0.08);
+  --display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --text: "Tinos", "Times New Roman", Times, serif;
+  --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
+  --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --on-electric: #FFFFFF;
+    --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --on-electric: #FFFFFF;
+  --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--text); font-size: 19px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+  transition: background-color .3s, color .3s;
+}
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+.app {
+  height: 100vh; height: 100dvh;
+  max-width: 640px; margin: 0 auto;
+  display: grid; grid-template-rows: auto 1fr auto;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Arriba: firma, tema y en qué sección estás */
+.top { padding: 14px var(--gutter-r) 0 var(--gutter-l); display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 12px; }
+.brand { font-family: var(--display); font-size: 26px; line-height: 1; letter-spacing: 0.01em; }
+.theme {
+  width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--ink); background: transparent; display: grid; place-items: center;
+}
+.theme svg { width: 18px; height: 18px; }
+.where { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
+.sec { font-style: italic; font-size: 18px; line-height: 24px; height: 24px; overflow: hidden; }
+.sec span { display: block; }
+.bar { height: 4px; border-radius: 2px; background: var(--veil); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--electric); border-radius: 2px; transition: width .5s var(--ease); }
+
+/* La pantalla de cada pregunta */
+.stage { position: relative; overflow: hidden; }
+.card {
+  position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 28px var(--gutter-r) 28px var(--gutter-l);
+  display: flex; flex-direction: column; gap: 18px;
+}
+.q {
+  margin: 0; font-family: var(--display); font-weight: 400;
+  font-size: clamp(36px, 10.5vw, 60px); line-height: 0.98; letter-spacing: 0.005em;
+  text-transform: uppercase; text-wrap: balance; overflow-wrap: break-word;
+}
+.q:focus { outline: none; }
+.q .w { display: inline-block; }
+.hint { margin: -4px 0 0; font-style: italic; color: var(--muted); font-size: 17px; }
+.hint.shake { color: var(--ink); }
+.lead { margin: 0; font-size: 20px; max-width: 34ch; }
+
+.opts { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+.opts.chips { flex-direction: row; flex-wrap: wrap; }
+.opt {
+  cursor: pointer; text-align: left; font-size: 19px; line-height: 1.25;
+  background: transparent; border: 2px solid var(--ink); border-radius: 16px;
+  padding: 13px 16px; min-height: 52px;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  transition: background-color .18s, border-color .18s, color .18s, transform .18s var(--ease);
+}
+.chips .opt { border-radius: 999px; padding: 11px 18px; min-height: 48px; }
+.opt:active { transform: scale(0.97); }
+.opt .tick { width: 18px; height: 18px; flex: none; display: none; }
+.opt[aria-pressed="true"] { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
+.opt[aria-pressed="true"] .tick { display: block; }
+.opt.otro { border-style: dashed; }
+.opt.otro[aria-pressed="true"] { border-style: solid; }
+@media (hover: hover) { .opt:hover { border-color: var(--electric); } }
+
+.line {
+  width: 100%; font: inherit; font-size: 24px; color: var(--ink); background: transparent;
+  border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; padding: 10px 2px; outline: none;
+}
+textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 21px; }
+.line::placeholder { color: var(--muted); opacity: 1; }
+.line:focus { border-bottom-color: var(--electric); }
+.err { margin: 0; font-size: 17px; font-weight: 700; color: var(--electric); }
+
+/* Abajo: volver y seguir */
+.foot {
+  display: flex; gap: 10px; align-items: center;
+  padding: 12px var(--gutter-r) max(16px, env(safe-area-inset-bottom, 0px)) var(--gutter-l);
+}
+.back {
+  width: 56px; height: 56px; flex: none; border-radius: 50%; cursor: pointer;
+  background: transparent; border: 2px solid var(--ink); display: grid; place-items: center;
+}
+.back svg { width: 20px; height: 20px; }
+.next {
+  flex: 1; height: 56px; border-radius: 999px; cursor: pointer; border: 0;
+  background: var(--ink); color: var(--paper);
+  font-family: var(--display); font-size: 22px; letter-spacing: 0.03em; text-transform: uppercase;
+  transition: opacity .2s, background-color .2s;
+}
+.next[aria-disabled="true"] { opacity: 0.35; }
+.next.busy { opacity: 0.6; cursor: progress; }
+.restart { align-self: flex-start; background: none; border: 0; padding: 4px 0; cursor: pointer; font-style: italic; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; font-size: 17px; }
+
+.theme:focus-visible, .opt:focus-visible, .next:focus-visible, .back:focus-visible, .restart:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
+
+/* Final */
+.done-mark { width: 92px; height: 92px; }
+.done-mark circle { fill: var(--electric); }
+.done-mark path { fill: none; stroke: var(--on-electric); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60; stroke-dashoffset: 0; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .card.reveal .q .w { animation: rise .55s var(--ease) both; animation-delay: calc(var(--i) * 45ms + 120ms); }
+  .card.reveal .opts .opt, .card.reveal .line { animation: fadeup .45s var(--ease) both; animation-delay: calc(var(--j, 0) * 35ms + 260ms); }
+  .hint.shake { animation: shake .35s; }
+  .done-mark circle { animation: pop .5s var(--ease) both; }
+  .done-mark path { stroke-dashoffset: 60; animation: draw .45s .35s var(--ease) forwards; }
+  @keyframes rise { from { transform: translateY(0.7em); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes fadeup { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+  @keyframes pop { from { transform: scale(0.4); transform-origin: center; opacity: 0; } to { transform: none; opacity: 1; } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">Tomi</div>
+    <button type="button" class="theme" id="themeBtn" aria-label="Cambiar a modo oscuro">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+    </button>
+    <div class="where" id="where">
+      <div class="sec" aria-live="polite"><span id="secName">Bienvenida</span></div>
+      <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    </div>
+  </header>
+  <main class="stage" id="stage"></main>
+  <footer class="foot" id="foot">
+    <button type="button" class="back" id="backBtn" aria-label="Pregunta anterior" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <button type="button" class="next" id="nextBtn">Empezar</button>
+  </footer>
+  <input class="hp" id="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+</div>
+
+<script src="/preguntas.js"></script>
+<script>
+(function () {
+  "use strict";
+  var B = window.BRIEF, OTRO = B.otro;
+  var FLOW = [];
+  B.secciones.forEach(function (s, si) {
+    s.preguntas.forEach(function (q, qi) { q.sec = s; q.si = si; q.qi = qi; q.n = s.preguntas.length; FLOW.push(q); });
+  });
+
+  var KEY = "brief-tomi-v1";
+  var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var $ = function (id) { return document.getElementById(id); };
+  var stage = $("stage"), nextBtn = $("nextBtn"), backBtn = $("backBtn"), secName = $("secName"), barFill = $("barFill"), foot = $("foot"), where = $("where");
+
+  // Cliente que viene en el link: ?c=lucia-fernandez
+  var params = new URLSearchParams(location.search);
+  var cliente = (params.get("c") || "").trim().slice(0, 60);
+  var nombreLink = cliente.replace(/[-_+.]+/g, " ").replace(/\s+/g, " ").trim()
+    .split(" ").map(function (w) { return w ? w.charAt(0).toUpperCase() + w.slice(1) : w; }).join(" ");
+
+  var st = { i: -1, a: {}, cliente: cliente };
+  var hadDraft = false;
+  try {
+    var raw = localStorage.getItem(KEY);
+    if (raw) { var d = JSON.parse(raw); if (d && d.a && (!cliente || d.cliente === cliente)) { st = d; hadDraft = d.i >= 0; st.i = -1; } }
+  } catch (e) {}
+  if (cliente) st.cliente = cliente;
+  var resumeAt = 0;
+  if (hadDraft) { try { resumeAt = Math.min(JSON.parse(localStorage.getItem(KEY)).i, FLOW.length - 1); } catch (e) { resumeAt = 0; } }
+
+  function A(id) { return st.a[id] || (st.a[id] = { sel: [], otro: "", text: "" }); }
+  if (nombreLink && !A("nombre").text) A("nombre").text = nombreLink;
+
+  var saveT;
+  function save() { clearTimeout(saveT); saveT = setTimeout(function () { try { localStorage.setItem(KEY, JSON.stringify(st)); } catch (e) {} }, 250); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function words(text) { return text.split(" ").map(function (w, k) { return '<span class="w" style="--i:' + k + '">' + esc(w) + "</span>"; }).join(" "); }
+
+  /* ---------- Tema ---------- */
+  var themeBtn = $("themeBtn");
+  function isDark() {
+    var t = document.documentElement.getAttribute("data-theme");
+    if (t) return t === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function syncTheme() {
+    var dark = isDark();
+    themeBtn.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", dark ? "#000000" : "#FFFFFF");
+  }
+  themeBtn.addEventListener("click", function () {
+    var next = isDark() ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("tema", next); } catch (e) {}
+    syncTheme();
+  });
+  if (window.matchMedia) { try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", syncTheme); } catch (e) {} }
+  syncTheme();
+
+  /* ---------- Respuestas ---------- */
+  function value(q) {
+    var a = st.a[q.id]; if (!a) return "";
+    if (q.type === "text" || q.type === "long") return (a.text || "").trim();
+    var parts = a.sel.filter(function (s) { return s !== OTRO; });
+    if (a.sel.indexOf(OTRO) !== -1) parts.push(a.otro.trim() ? "Otro: " + a.otro.trim() : "Otro");
+    return parts.join("; ");
+  }
+  function problem(q) {
+    var a = A(q.id);
+    if (q.type === "text" || q.type === "long") return q.req && !a.text.trim() ? "Completá este dato para seguir." : "";
+    if (a.sel.indexOf(OTRO) !== -1 && !a.otro.trim()) return "Escribí qué es «Otro» o desmarcalo.";
+    if (q.req && !a.sel.length) return q.type === "one" ? "Elegí una opción para seguir." : "Elegí al menos una opción para seguir.";
+    return "";
+  }
+  function isEmpty(q) { var a = A(q.id); return (q.type === "text" || q.type === "long") ? !a.text.trim() : !a.sel.length; }
+  function hintText(q) {
+    if (q.note) return q.note;
+    if (q.type === "one") return "Elegí una.";
+    if (q.type === "many") return q.max ? "Elegí hasta " + q.max + "." : "Podés elegir varias.";
+    return "";
+  }
+
+  /* ---------- Pantallas ---------- */
+  function cardWelcome() {
+    var first = (nombreLink || "").split(" ")[0];
+    return '<h1 class="q" tabindex="-1">' + words(first ? "Hola, " + first + "." : "Hola.") + "</h1>" +
+      '<p class="lead">Antes de armar tu estrategia de marca personal quiero conocerte un poco. Son ' + FLOW.length + " preguntas cortas y llevan unos 5 minutos.</p>" +
+      '<p class="lead">Si ninguna opción te representa, tocá «Otro» y escribilo a tu manera.</p>' +
+      (hadDraft ? '<button type="button" class="restart" id="restartBtn">Empezar de nuevo</button>' : "");
+  }
+  function cardQuestion(q) {
+    var a = A(q.id), body = "", hint = hintText(q);
+    if (q.type === "text") {
+      body = '<input class="line" id="in-' + q.id + '" type="text" enterkeyhint="next" autocomplete="' + (q.auto || "off") + '" value="' + esc(a.text) + '" placeholder="' + esc(q.ph || "") + '" aria-labelledby="qh">';
+    } else if (q.type === "long") {
+      body = '<textarea class="line" id="in-' + q.id + '" placeholder="' + esc(q.ph || "") + '" aria-labelledby="qh">' + esc(a.text) + "</textarea>";
+    } else {
+      var opts = q.o.concat([OTRO]);
+      var short = opts.every(function (o) { return o.length <= 14; });
+      body = '<div class="opts' + (short ? " chips" : "") + '" role="group" aria-labelledby="qh">' + opts.map(function (o, k) {
+        return '<button type="button" class="opt' + (o === OTRO ? " otro" : "") + '" style="--j:' + k + '" data-v="' + esc(o) + '" aria-pressed="' + (a.sel.indexOf(o) !== -1) + '">' +
+          "<span>" + esc(o) + '</span><svg class="tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+      }).join("") + "</div>" +
+      '<div id="otroWrap"' + (a.sel.indexOf(OTRO) !== -1 ? "" : " hidden") + '><input class="line" id="otroIn" type="text" enterkeyhint="next" value="' + esc(a.otro) + '" placeholder="Escribilo acá" aria-label="Tu respuesta para «Otro»"></div>';
+    }
+    return '<h1 class="q" id="qh" tabindex="-1">' + words(q.q) + "</h1>" +
+      (hint ? '<p class="hint" id="hint">' + esc(hint) + "</p>" : "") + body +
+      '<p class="err" id="err" role="alert" hidden></p>';
+  }
+  function cardDone() {
+    return '<svg class="done-mark" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="46"/><path d="M27 47l13 13 25-27"/></svg>' +
+      '<h1 class="q" tabindex="-1">' + words("Respuestas guardadas.") + "</h1>" +
+      '<p class="lead">A la brevedad se van a comunicar con vos.</p>';
+  }
+
+  var current = null, busy = false, autoT = null;
+
+  function chrome() {
+    var i = st.i;
+    if (i === -1) {
+      secName.textContent = "Bienvenida"; barFill.style.width = "0%";
+      backBtn.hidden = true; nextBtn.textContent = hadDraft ? "Seguir donde quedé" : "Empezar";
+      nextBtn.setAttribute("aria-disabled", "false"); foot.hidden = false; where.style.visibility = "visible";
+      return;
+    }
+    if (i >= FLOW.length) { foot.hidden = true; where.style.visibility = "hidden"; return; }
+    var q = FLOW[i];
+    if (secName.textContent !== q.sec.nombre) swapSection(q.sec.nombre);
+    barFill.style.width = ((q.qi + 1) / q.n * 100) + "%";
+    backBtn.hidden = false; foot.hidden = false; where.style.visibility = "visible";
+    refreshNext();
+  }
+  function refreshNext() {
+    if (st.i < 0 || st.i >= FLOW.length) return;
+    var q = FLOW[st.i], last = st.i === FLOW.length - 1;
+    var bad = !!problem(q);
+    nextBtn.setAttribute("aria-disabled", bad ? "true" : "false");
+    nextBtn.textContent = last ? "Enviar respuestas" : (!q.req && isEmpty(q) ? "Saltar" : "Siguiente");
+  }
+  function swapSection(name) {
+    var span = secName;
+    if (reduced || !span.animate) { span.textContent = name; return; }
+    span.animate([{ transform: "none", opacity: 1 }, { transform: "translateY(-100%)", opacity: 0 }], { duration: 220, easing: "ease-in" }).onfinish = function () {
+      span.textContent = name;
+      span.animate([{ transform: "translateY(100%)", opacity: 0 }, { transform: "none", opacity: 1 }], { duration: 320, easing: "cubic-bezier(.22,.8,.2,1)" });
+    };
+  }
+
+  function build(i) {
+    var el = document.createElement("section");
+    el.className = "card";
+    el.innerHTML = i === -1 ? cardWelcome() : (i >= FLOW.length ? cardDone() : cardQuestion(FLOW[i]));
+    return el;
+  }
+
+  function go(to, dir) {
+    if (busy) return;
+    clearTimeout(autoT);
+    var from = current;
+    st.i = to;
+    if (to >= 0 && to < FLOW.length) save();
+    var el = build(to);
+    stage.appendChild(el);
+    current = el;
+    chrome();
+    var finish = function () {
+      if (from && from.parentNode) from.parentNode.removeChild(from);
+      busy = false;
+      var f = el.querySelector("input.line, textarea.line");
+      if (f && to >= 0 && to < FLOW.length && (FLOW[to].type === "text")) { try { f.focus({ preventScroll: true }); } catch (e) {} }
+      else { var h = el.querySelector(".q"); if (h) try { h.focus({ preventScroll: true }); } catch (e) {} }
+    };
+    if (!from) { if (!reduced) el.classList.add("reveal"); finish(); return; }
+    busy = true;
+    if (reduced || !el.animate) {
+      el.style.opacity = 0;
+      var an = el.animate ? el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 150 }) : null;
+      el.style.opacity = "";
+      if (an) an.onfinish = finish; else finish();
+      return;
+    }
+    el.classList.add("reveal");
+    var up = dir !== "back";
+    var opts = { duration: 560, easing: "cubic-bezier(.22,.8,.2,1)" };
+    from.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(" + (up ? "-100%" : "100%") + ")", opacity: 0.2 }], opts);
+    el.animate([{ transform: "translateY(" + (up ? "100%" : "-100%") + ")" }, { transform: "translateY(0)" }], opts).onfinish = finish;
+  }
+
+  function showErr(msg) {
+    var e = current && current.querySelector("#err");
+    if (!e) return;
+    e.textContent = msg; e.hidden = !msg;
+  }
+
+  function forward() {
+    if (busy) return;
+    if (st.i === -1) { go(hadDraft ? resumeAt : 0, "up"); return; }
+    var q = FLOW[st.i], p = problem(q);
+    if (p) { showErr(p); return; }
+    if (st.i < FLOW.length - 1) { go(st.i + 1, "up"); return; }
+    send();
+  }
+  function backward() { if (busy || st.i <= -1) return; go(st.i - 1, "back"); }
+
+  function send() {
+    if (nextBtn.classList.contains("busy")) return;
+    var respuestas = {};
+    FLOW.forEach(function (q) { respuestas[q.id] = value(q); });
+    nextBtn.classList.add("busy"); nextBtn.textContent = "Enviando…";
+    showErr("");
+    fetch("/api/respuestas", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ cliente: st.cliente || "", respuestas: respuestas, hp: $("hp").value })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("http " + r.status);
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      nextBtn.classList.remove("busy");
+      go(FLOW.length, "up");
+    }).catch(function () {
+      nextBtn.classList.remove("busy"); refreshNext();
+      showErr("No se pudieron enviar las respuestas. Revisá tu conexión y tocá «Enviar respuestas» de nuevo.");
+    });
+  }
+
+  /* ---------- Eventos ---------- */
+  nextBtn.addEventListener("click", forward);
+  backBtn.addEventListener("click", backward);
+
+  stage.addEventListener("click", function (e) {
+    if (e.target.closest("#restartBtn")) {
+      st = { i: -1, a: {}, cliente: cliente }; hadDraft = false; resumeAt = 0;
+      if (nombreLink) A("nombre").text = nombreLink;
+      try { localStorage.removeItem(KEY); } catch (err) {}
+      go(0, "up"); return;
+    }
+    var b = e.target.closest(".opt");
+    if (!b || st.i < 0 || st.i >= FLOW.length) return;
+    var q = FLOW[st.i], a = A(q.id), v = b.getAttribute("data-v"), k = a.sel.indexOf(v);
+    clearTimeout(autoT);
+    if (q.type === "one") a.sel = k !== -1 ? [] : [v];
+    else if (k !== -1) a.sel.splice(k, 1);
+    else if (q.max && a.sel.length >= q.max) {
+      var h = $("hint");
+      if (h) { h.textContent = "Ya elegiste " + q.max + ". Desmarcá una para cambiarla."; h.classList.remove("shake"); void h.offsetWidth; h.classList.add("shake"); }
+      return;
+    } else a.sel.push(v);
+    current.querySelectorAll(".opt").forEach(function (o) { o.setAttribute("aria-pressed", a.sel.indexOf(o.getAttribute("data-v")) !== -1); });
+    var ow = $("otroWrap"), withOtro = a.sel.indexOf(OTRO) !== -1;
+    if (ow) ow.hidden = !withOtro;
+    var h2 = $("hint"); if (h2 && q.max && a.sel.length < q.max) { h2.textContent = hintText(q); h2.classList.remove("shake"); }
+    showErr(""); refreshNext(); save();
+    if (v === OTRO && withOtro) { var oi = $("otroIn"); if (oi) { oi.focus(); oi.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" }); } return; }
+    if (q.type === "one" && a.sel.length && !withOtro) {
+      var at = st.i;
+      autoT = setTimeout(function () { if (st.i === at && !busy) forward(); }, 420);
+    }
+  });
+  stage.addEventListener("input", function (e) {
+    if (st.i < 0 || st.i >= FLOW.length) return;
+    var q = FLOW[st.i];
+    if (e.target.id === "otroIn") A(q.id).otro = e.target.value;
+    else if (e.target.id === "in-" + q.id) A(q.id).text = e.target.value;
+    else return;
+    showErr(""); refreshNext(); save();
+  });
+  stage.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); e.target.blur(); forward(); }
+  });
+
+  // Deslizar: hacia arriba para seguir, hacia abajo para volver
+  var sy = null, sx = null, st0 = 0;
+  stage.addEventListener("touchstart", function (e) {
+    if (e.target.closest("input, textarea")) { sy = null; return; }
+    sy = e.touches[0].clientY; sx = e.touches[0].clientX; st0 = current ? current.scrollTop : 0;
+  }, { passive: true });
+  stage.addEventListener("touchend", function (e) {
+    if (sy === null || !current) return;
+    var dy = sy - e.changedTouches[0].clientY, dx = Math.abs(sx - e.changedTouches[0].clientX);
+    sy = null;
+    if (Math.abs(dy) < 70 || dx > Math.abs(dy)) return;
+    var atTop = st0 <= 0 && current.scrollTop <= 0;
+    var atBottom = current.scrollTop + current.clientHeight >= current.scrollHeight - 2;
+    if (dy > 0 && atBottom && st.i < FLOW.length) {
+      if (st.i >= 0 && problem(FLOW[st.i])) { showErr(problem(FLOW[st.i])); return; }
+      if (st.i === FLOW.length - 1) return; // enviar solo con el botón
+      forward();
+    } else if (dy < 0 && atTop && st.i >= 0 && st.i < FLOW.length) backward();
+  }, { passive: true });
+
+  go(-1);
+})();
+</script>
+</body>
+</html>

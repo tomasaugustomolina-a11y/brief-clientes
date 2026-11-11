@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Respuestas | Tomi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<script>
+  try { var t = localStorage.getItem("tema"); if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<style>
+:root {
+  --paper: #FFFFFF; --ink: #000000; --electric: #2323FF; --on-electric: #FFFFFF;
+  --muted: #5B5B66; --veil: rgba(0, 0, 0, 0.08);
+  --display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --text: "Tinos", "Times New Roman", Times, serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --on-electric: #FFFFFF; --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark; }
+}
+:root[data-theme="dark"] { --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --on-electric: #FFFFFF; --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--text); font-size: 18px; line-height: 1.45; -webkit-font-smoothing: antialiased;
+}
+button, input { font: inherit; color: inherit; }
+.wrap {
+  max-width: 760px; margin: 0 auto;
+  padding: max(20px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 48px max(20px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 28px;
+}
+.top { display: flex; justify-content: space-between; align-items: center; }
+.brand { font-family: var(--display); font-size: 26px; line-height: 1; }
+h1 { margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(40px, 11vw, 64px); line-height: 0.98; }
+h2 { margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: 26px; line-height: 1.05; }
+p { margin: 0; }
+.muted { color: var(--muted); font-style: italic; }
+.btn {
+  cursor: pointer; border-radius: 999px; min-height: 48px; padding: 10px 20px;
+  border: 2px solid var(--ink); background: transparent; font-size: 17px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn.solid { background: var(--ink); color: var(--paper); font-family: var(--display); text-transform: uppercase; letter-spacing: 0.03em; font-size: 19px; }
+.btn.small { min-height: 40px; padding: 6px 14px; font-size: 16px; }
+.btn.blue { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:focus-visible, .line:focus-visible, summary:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
+.line {
+  width: 100%; font-size: 22px; background: transparent; border: 0; border-bottom: 2px solid var(--ink);
+  border-radius: 0; padding: 10px 2px; outline: none;
+}
+.line:focus { border-bottom-color: var(--electric); }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.msg { font-weight: 700; color: var(--electric); }
+.block { display: flex; flex-direction: column; gap: 14px; }
+.linkout { font-size: 17px; overflow-wrap: anywhere; padding: 12px 14px; border: 2px dashed var(--ink); border-radius: 14px; }
+.list { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+details { border-bottom: 2px solid var(--ink); }
+summary { cursor: pointer; list-style: none; padding: 16px 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: baseline; }
+summary::-webkit-details-marker { display: none; }
+summary strong { font-size: 21px; }
+summary .when { color: var(--muted); font-size: 16px; white-space: nowrap; }
+summary .what { grid-column: 1 / -1; color: var(--muted); font-size: 16px; font-style: italic; }
+.detail { padding: 0 0 22px; display: flex; flex-direction: column; gap: 18px; }
+.detail h3 { margin: 0 0 6px; font-weight: 700; font-size: 17px; color: var(--electric); }
+dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 6px 18px; font-size: 16px; }
+dt { color: var(--muted); }
+dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 540px) { dl { grid-template-columns: 1fr; gap: 0; } dd { margin-bottom: 10px; } }
+.empty { border: 2px dashed var(--ink); border-radius: 16px; padding: 24px 20px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><div class="brand">Tomi</div><a class="muted" href="/">Ver formulario</a></div>
+
+  <section class="block" id="login">
+    <h1>Respuestas</h1>
+    <p class="muted">Solo vos entrás acá. Escribí la contraseña para ver lo que completaron tus clientes.</p>
+    <form id="loginForm" class="block">
+      <input class="line" id="pass" type="password" autocomplete="current-password" placeholder="Contraseña" aria-label="Contraseña">
+      <div class="row"><button class="btn solid" type="submit">Entrar</button><span class="msg" id="loginMsg" role="alert"></span></div>
+    </form>
+  </section>
+
+  <section class="block" id="panel" hidden>
+    <h1>Respuestas</h1>
+    <div class="block">
+      <h2>Link para un cliente</h2>
+      <p class="muted">Escribí el nombre y mandale este link. El formulario lo saluda por su nombre y la respuesta queda marcada con él.</p>
+      <input class="line" id="clientName" type="text" placeholder="Nombre del cliente" aria-label="Nombre del cliente">
+      <p class="linkout" id="clientLink"></p>
+      <div class="row"><button class="btn" type="button" id="copyLink">Copiar link</button><span class="msg" id="copyMsg"></span></div>
+    </div>
+    <div class="block">
+      <div class="row" style="justify-content: space-between"><h2 id="count">Clientes</h2>
+        <div class="row">
+          <button class="btn small" type="button" id="dlXlsx">Descargar Excel</button>
+          <button class="btn small" type="button" id="dlJson">Descargar JSON</button>
+        </div>
+      </div>
+      <p class="msg" id="panelMsg" role="alert"></p>
+      <div id="list" class="list"></div>
+    </div>
+  </section>
+</div>
+
+<script src="/preguntas.js"></script>
+<script>
+(function () {
+  "use strict";
+  var B = window.BRIEF, FLOW = [];
+  B.secciones.forEach(function (s) { s.preguntas.forEach(function (q) { q.sec = s.nombre; FLOW.push(q); }); });
+  var $ = function (id) { return document.getElementById(id); };
+  var pass = "", rows = [];
+  try { pass = sessionStorage.getItem("brief-admin") || ""; } catch (e) {}
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function fecha(iso) { try { return new Date(iso).toLocaleDateString("es-AR", { day: "numeric", month: "short", year: "numeric" }); } catch (e) { return iso; } }
+  function hoy() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+
+  function api(method, qs) {
+    return fetch("/api/respuestas" + (qs || ""), { method: method, headers: { authorization: "Bearer " + pass } })
+      .then(function (r) { if (r.status === 401) throw new Error("auth"); if (!r.ok) throw new Error("http"); return r.json(); });
+  }
+
+  function load() {
+    return api("GET").then(function (d) {
+      rows = d.respuestas || [];
+      try { sessionStorage.setItem("brief-admin", pass); } catch (e) {}
+      $("login").hidden = true; $("panel").hidden = false;
+      render();
+    });
+  }
+
+  function render() {
+    $("count").textContent = rows.length === 1 ? "1 cliente" : rows.length + " clientes";
+    $("dlXlsx").disabled = $("dlJson").disabled = !rows.length;
+    if (!rows.length) {
+      $("list").innerHTML = '<div class="empty"><p><strong>Todavía no completó nadie el formulario.</strong></p><p class="muted">Armá un link arriba y mandáselo a tu primer cliente.</p></div>';
+      $("list").classList.remove("list");
+      return;
+    }
+    $("list").classList.add("list");
+    $("list").innerHTML = rows.map(function (r) {
+      var v = r.respuestas || {};
+      var secciones = B.secciones.map(function (s) {
+        return '<div><h3>' + esc(s.nombre) + '</h3><dl>' + s.preguntas.map(function (q) {
+          return '<dt>' + esc(q.q) + '</dt><dd>' + (v[q.id] ? esc(v[q.id]) : '<span class="muted">Sin responder</span>') + '</dd>';
+        }).join("") + '</dl></div>';
+      }).join("");
+      return '<details><summary><strong>' + esc(r.nombre || "Sin nombre") + '</strong><span class="when">' + esc(fecha(r.creado)) + '</span>' +
+        '<span class="what">' + esc(v.rubro || "Rubro sin definir") + (r.cliente ? " · link de " + esc(r.cliente) : "") + '</span></summary>' +
+        '<div class="detail">' + secciones +
+        '<div class="row"><button class="btn small" type="button" data-del="' + esc(r.id) + '">Borrar esta respuesta</button>' +
+        '<span data-confirm="' + esc(r.id) + '" hidden class="row"><button class="btn small blue" type="button" data-yes="' + esc(r.id) + '">Sí, borrar</button><button class="btn small" type="button" data-no="' + esc(r.id) + '">Cancelar</button></span></div>' +
+        '</div></details>';
+    }).join("");
+  }
+
+  $("loginForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    pass = $("pass").value.trim();
+    $("loginMsg").textContent = "";
+    load().catch(function (err) { $("loginMsg").textContent = err.message === "auth" ? "La contraseña no es correcta." : "No se pudo conectar. Probá de nuevo."; });
+  });
+  if (pass) load().catch(function () { pass = ""; });
+
+  /* Link por cliente */
+  function slug(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50); }
+  function link() { var s = slug($("clientName").value); return location.origin + "/" + (s ? "?c=" + s : ""); }
+  function showLink() { $("clientLink").textContent = link(); }
+  $("clientName").addEventListener("input", showLink); showLink();
+  $("copyLink").addEventListener("click", function () {
+    var t = link();
+    var ok = function () { $("copyMsg").textContent = "Copiado."; setTimeout(function () { $("copyMsg").textContent = ""; }, 2000); };
+    if (navigator.clipboard) navigator.clipboard.writeText(t).then(ok, function () { $("copyMsg").textContent = "Seleccioná el link y copialo."; });
+    else $("copyMsg").textContent = "Seleccioná el link y copialo.";
+  });
+
+  /* Descargas */
+  function bajar(blob, nombre) {
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  $("dlJson").addEventListener("click", function () {
+    var out = rows.map(function (r) {
+      return { id: r.id, fecha: r.creado, link: r.cliente || "", respuestas: FLOW.map(function (q) { return { seccion: q.sec, pregunta: q.q, respuesta: (r.respuestas || {})[q.id] || "" }; }) };
+    });
+    bajar(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" }), "briefs-clientes-" + hoy() + ".json");
+  });
+  var xlsxLoading = null;
+  function loadXlsx() {
+    if (window.XLSX) return Promise.resolve();
+    if (!xlsxLoading) xlsxLoading = new Promise(function (ok, fail) {
+      var s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+      s.onload = ok; s.onerror = function () { xlsxLoading = null; fail(); }; document.head.appendChild(s);
+    });
+    return xlsxLoading;
+  }
+  $("dlXlsx").addEventListener("click", function () {
+    $("panelMsg").textContent = "";
+    loadXlsx().then(function () {
+      var head = ["Fecha", "Link"].concat(FLOW.map(function (q) { return q.q; }));
+      var aoa = [head].concat(rows.map(function (r) { var v = r.respuestas || {}; return [fecha(r.creado), r.cliente || ""].concat(FLOW.map(function (q) { return v[q.id] || ""; })); }));
+      var ws = XLSX.utils.aoa_to_sheet(aoa);
+      ws["!cols"] = head.map(function (h, i) { return { wch: i < 2 ? 14 : 30 }; });
+      var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Clientes");
+      XLSX.writeFile(wb, "briefs-clientes-" + hoy() + ".xlsx");
+    }).catch(function () { $("panelMsg").textContent = "No se pudo preparar el Excel. Revisá la conexión y probá de nuevo."; });
+  });
+
+  /* Borrar con confirmación */
+  $("list").addEventListener("click", function (e) {
+    var b;
+    if ((b = e.target.closest("[data-del]"))) { b.hidden = true; document.querySelector('[data-confirm="' + b.getAttribute("data-del") + '"]').hidden = false; return; }
+    if ((b = e.target.closest("[data-no]"))) { var id = b.getAttribute("data-no"); document.querySelector('[data-confirm="' + id + '"]').hidden = true; document.querySelector('[data-del="' + id + '"]').hidden = false; return; }
+    if ((b = e.target.closest("[data-yes]"))) {
+      var id2 = b.getAttribute("data-yes"); b.disabled = true;
+      api("DELETE", "?id=" + encodeURIComponent(id2)).then(function () { rows = rows.filter(function (r) { return r.id !== id2; }); render(); })
+        .catch(function () { b.disabled = false; $("panelMsg").textContent = "No se pudo borrar. Probá de nuevo."; });
+    }
+  });
+})();
+</script>
+</body>
+</html>
