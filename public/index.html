@@ -210,6 +210,38 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
   @keyframes pop { from { transform: scale(0.4); transform-origin: center; opacity: 0; } to { transform: none; opacity: 1; } }
   @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  /* Al abrir: el saludo se enciende letra por letra, como un cartel luminoso. Después aparece el resto. */
+  .card.cartel .q .l { opacity: .1; }
+  .card.cartel .lead, .card.cartel .sign, .card.cartel .restart, .card.cartel .tip, .app.boot .foot { opacity: 0; }
+  .card.cartel.on .q .l { animation: lit .95s both; animation-delay: var(--d, 0ms); }
+  .card.cartel.on .q .l.falla { animation: lit2 1.5s both; animation-delay: var(--d, 0ms); }
+  .card.cartel.on .lead, .card.cartel.on .sign, .card.cartel.on .restart, .card.cartel.on .tip, .app.boot.on .foot { animation: fadeup .5s var(--ease) both; }
+  .card.cartel.on .lead { animation-delay: 820ms; }
+  .card.cartel.on .sign { animation-delay: 950ms; }
+  .card.cartel.on .restart { animation-delay: 1020ms; }
+  .card.cartel.on .tip, .app.boot.on .foot { animation-delay: 1080ms; }
+  @keyframes lit {
+    0%, 12%  { opacity: .1; color: var(--ink); text-shadow: none; }
+    13%, 20% { opacity: 1; color: var(--electric-text); text-shadow: 0 0 .3em var(--electric); }
+    21%, 34% { opacity: .1; text-shadow: none; }
+    35%, 41% { opacity: 1; color: var(--electric-text); text-shadow: 0 0 .3em var(--electric); }
+    42%, 48% { opacity: .4; text-shadow: none; }
+    49%      { opacity: 1; color: var(--electric-text); text-shadow: 0 0 .4em var(--electric); }
+    100%     { opacity: 1; color: var(--ink); text-shadow: 0 0 0 transparent; }
+  }
+  /* Una letra tarda más en prender, como un tubo flojo. */
+  @keyframes lit2 {
+    0%, 14%  { opacity: .1; color: var(--ink); text-shadow: none; }
+    15%, 18% { opacity: 1; color: var(--electric-text); text-shadow: 0 0 .3em var(--electric); }
+    19%, 36% { opacity: .1; text-shadow: none; }
+    37%, 40% { opacity: 1; color: var(--electric-text); text-shadow: 0 0 .3em var(--electric); }
+    41%, 55% { opacity: .1; text-shadow: none; }
+    56%, 60% { opacity: 1; color: var(--electric-text); text-shadow: 0 0 .3em var(--electric); }
+    61%, 67% { opacity: .35; text-shadow: none; }
+    68%      { opacity: 1; color: var(--electric-text); text-shadow: 0 0 .4em var(--electric); }
+    100%     { opacity: 1; color: var(--ink); text-shadow: 0 0 0 transparent; }
+  }
 }
 </style>
 </head>
@@ -335,9 +367,28 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   }
 
   /* ---------- Pantallas ---------- */
-  function cardWelcome() {
+  // El saludo letra por letra, para la animación de cartel. Cada letra prende con un atraso apenas distinto.
+  function letters(text) {
+    if (text.normalize) text = text.normalize("NFC");
+    var chars = Array.from ? Array.from(text.replace(/\s/g, "")) : text.replace(/\s/g, "").split("");
+    var step = Math.min(60, 620 / Math.max(chars.length, 1));
+    var soloLetras = chars.map(function (c, k) { return /[.,;:!¡?¿'-]/.test(c) ? -1 : k; }).filter(function (k) { return k !== -1; });
+    var falla = soloLetras.length > 2 ? soloLetras[Math.floor(Math.random() * soloLetras.length)] : -1;
+    var n = 0;
+    return text.split(" ").map(function (w) {
+      return '<span class="w">' + (Array.from ? Array.from(w) : w.split("")).map(function (ch) {
+        var d = Math.round(n * step + Math.random() * 160), c = n === falla ? " falla" : "";
+        n++;
+        return '<span class="l' + c + '" style="--d:' + d + 'ms">' + esc(ch) + "</span>";
+      }).join("") + "</span>";
+    }).join(" ");
+  }
+  function cardWelcome(cartel) {
     var first = (nombreLink || "").split(" ")[0];
-    return '<h1 class="q" tabindex="-1">' + words(first ? "Hola, " + first + "." : "Hola.") + "</h1>" +
+    var hola = first ? "Hola, " + first + "." : "Hola.";
+    return (cartel
+        ? '<h1 class="q" tabindex="-1" aria-label="' + esc(hola) + '"><span aria-hidden="true">' + letters(hola) + "</span></h1>"
+        : '<h1 class="q" tabindex="-1">' + words(hola) + "</h1>") +
       '<p class="lead">Antes de armar tu estrategia de marca personal quiero conocerte un poco. Son 5 minutos. Si ninguna opción te representa, tocá «Otro» y escribilo a tu manera.</p>' +
       '<p class="sign">— Tomi</p>' +
       (hadDraft ? '<button type="button" class="restart" id="restartBtn">Empezar de nuevo</button>' : "") +
@@ -408,11 +459,25 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     };
   }
 
-  function build(i) {
+  function build(i, cartel) {
     var el = document.createElement("section");
-    el.className = "card";
-    el.innerHTML = i === -1 ? cardWelcome() : (i >= FLOW.length ? cardDone() : cardQuestion(FLOW[i]));
+    el.className = "card" + (cartel ? " cartel" : "");
+    el.innerHTML = i === -1 ? cardWelcome(cartel) : (i >= FLOW.length ? cardDone() : cardQuestion(FLOW[i]));
     return el;
+  }
+  // Prende el cartel de la bienvenida. Espera a que esté la tipografía (medio segundo como mucho).
+  function encender(el) {
+    var box = document.querySelector(".app"), started = false;
+    box.classList.add("boot");
+    var start = function () {
+      if (started) return; started = true;
+      el.classList.add("on"); box.classList.add("on");
+      setTimeout(function () { box.classList.remove("boot", "on"); el.classList.remove("cartel", "on"); }, 3200);
+    };
+    var t = setTimeout(start, 500);
+    try {
+      document.fonts.load('400 40px "Anton"').then(function () { clearTimeout(t); requestAnimationFrame(start); }, start);
+    } catch (e) { clearTimeout(t); start(); }
   }
 
   function go(to, dir) {
@@ -421,7 +486,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     var from = current;
     st.i = to;
     if (to >= 0 && to < FLOW.length) save();
-    var el = build(to);
+    var el = build(to, !from && to === -1 && !reduced);
     var oldH = stage.clientHeight;
     stage.appendChild(el);
     current = el;
@@ -435,7 +500,11 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
       if (f && to >= 0 && to < FLOW.length && (FLOW[to].type === "text")) { try { f.focus({ preventScroll: true }); } catch (e) {} }
       else { var h = el.querySelector(".q"); if (h) try { h.focus({ preventScroll: true }); } catch (e) {} }
     };
-    if (!from) { if (!reduced) el.classList.add("reveal"); finish(); return; }
+    if (!from) {
+      if (el.classList.contains("cartel")) encender(el);
+      else if (!reduced) el.classList.add("reveal");
+      finish(); return;
+    }
     busy = true;
     if (reduced || !el.animate) {
       el.style.opacity = 0;
