@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FFFFFF">
+<title>Armá tu plan | Tomi</title>
+<meta name="description" content="Elegí cuánto contenido querés por semana y mirá cuánto sale tu plan de redes.">
+<meta property="og:title" content="Armá tu plan de redes">
+<meta property="og:description" content="Elegí cuánto contenido querés por semana y mirá cuánto sale tu plan de redes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<script>
+  try { var t = localStorage.getItem("tema"); if (t === "dark" || t === "light") document.documentElement.setAttribute("data-theme", t); } catch (e) {}
+</script>
+<style>
+/*
+  Calculadora de presupuesto con la identidad de Tomi: papel blanco, tinta negra,
+  azul eléctrico solo en lo que el cliente está eligiendo. Una columna, total fijo abajo.
+*/
+:root {
+  --paper: #FFFFFF; --ink: #000000; --electric: #2323FF; --electric-text: #2323FF; --on-electric: #FFFFFF;
+  --muted: #5B5B66; --veil: rgba(0, 0, 0, 0.08);
+  --display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --text: "Tinos", "Times New Roman", Times, serif;
+  --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
+  --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --electric-text: #7C7CFF; --on-electric: #FFFFFF;
+    --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --electric-text: #7C7CFF; --on-electric: #FFFFFF;
+  --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--text); font-size: 19px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  transition: background-color .3s, color .3s;
+}
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 640px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top, 0px)) var(--gutter-r) 230px var(--gutter-l); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.brand { font-family: var(--display); font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase; }
+.theme { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 2px solid var(--ink); background: transparent; display: grid; place-items: center; }
+.theme svg { width: 18px; height: 18px; }
+
+h1 {
+  margin: 28px 0 12px; font-family: var(--display); font-weight: 400;
+  font-size: clamp(44px, 13vw, 72px); line-height: 0.95; text-transform: uppercase; text-wrap: balance;
+}
+.lead { margin: 0; font-size: 20px; max-width: 36ch; }
+.sign { margin: 10px 0 0; font-style: italic; font-weight: 700; color: var(--electric-text); }
+
+section { margin-top: 40px; }
+h2 {
+  margin: 0 0 6px; font-family: var(--display); font-weight: 400; font-size: 30px; line-height: 1.05;
+  text-transform: uppercase; letter-spacing: 0.01em;
+}
+.sub { margin: 0 0 18px; color: var(--muted); font-size: 17px; }
+
+/* Paquetes rápidos */
+.packs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pack {
+  cursor: pointer; text-align: left; background: transparent; border: 2px solid var(--ink); border-radius: 16px;
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; min-height: 52px;
+  transition: background-color .18s, border-color .18s, color .18s, transform .18s var(--ease);
+}
+.pack b { font-family: var(--display); font-weight: 400; font-size: 22px; text-transform: uppercase; letter-spacing: 0.02em; }
+.pack span { font-size: 16px; }
+.pack:active { transform: scale(0.97); }
+.pack[aria-pressed="true"] { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
+@media (hover: hover) { .pack:hover { border-color: var(--electric); } }
+
+/* Deslizadores */
+.row { padding: 16px 0 18px; border-top: 2px solid var(--ink); }
+.row:last-child { border-bottom: 2px solid var(--ink); }
+.row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.row-name { font-weight: 700; font-size: 20px; }
+.row-val { font-family: var(--display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.row-note { margin: 2px 0 10px; color: var(--muted); font-size: 16px; }
+
+input[type="range"] {
+  --pct: 0%;
+  -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 3px;
+  background: linear-gradient(to right, var(--electric) 0 var(--pct), var(--veil) var(--pct) 100%);
+}
+input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--veil); }
+input[type="range"]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--electric); }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 28px; height: 28px; margin-top: -11px; border-radius: 50%;
+  background: var(--paper); border: 3px solid var(--electric); transition: transform .15s var(--ease);
+}
+input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--paper); border: 3px solid var(--electric); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-offset: 2px; border-radius: 4px; }
+
+.btn {
+  cursor: pointer; border-radius: 999px; min-height: 52px; padding: 0 22px; border: 2px solid var(--ink);
+  background: transparent; font-family: var(--display); font-size: 19px; letter-spacing: 0.03em; text-transform: uppercase;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn.solid { background: var(--ink); color: var(--paper); }
+.btn:active { transform: scale(0.98); }
+.budget-go { margin-top: 6px; width: 100%; }
+.fit { margin: 12px 0 0; font-size: 17px; font-weight: 700; color: var(--electric-text); min-height: 1.45em; }
+
+/* Extras */
+.extra {
+  width: 100%; cursor: pointer; text-align: left; background: transparent; border: 2px solid var(--ink); border-radius: 16px;
+  padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 2px 14px; align-items: center; margin-bottom: 10px;
+  transition: background-color .18s, border-color .18s, color .18s;
+}
+.extra b { font-size: 19px; }
+.extra small { grid-column: 1; font-size: 16px; color: var(--muted); }
+.extra .price { grid-row: 1 / span 2; grid-column: 2; font-family: var(--display); font-size: 22px; }
+.extra[aria-pressed="true"] { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
+.extra[aria-pressed="true"] small { color: var(--on-electric); opacity: 0.85; }
+@media (hover: hover) { .extra:hover { border-color: var(--electric); } }
+.incl { margin: 4px 0 0; font-size: 17px; }
+.incl b { color: var(--electric-text); }
+
+/* Detalle y condiciones */
+.detail { margin: 0; padding: 0; list-style: none; }
+.detail li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--veil); font-size: 18px; }
+.detail li span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.conds { margin: 18px 0 0; padding-left: 1.1em; font-size: 17px; }
+.conds li { margin-bottom: 6px; }
+.actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+.copied { margin: 4px 0 0; font-weight: 700; color: var(--electric-text); min-height: 1.45em; }
+
+/* Total fijo abajo */
+.total {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--paper);
+  border-top: 2px solid var(--ink);
+  padding: 12px var(--gutter-r) max(14px, env(safe-area-inset-bottom, 0px)) var(--gutter-l);
+  transition: background-color .3s;
+}
+.total-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 4px 12px; }
+.t-label { font-size: 16px; color: var(--muted); grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; }
+.t-pack { color: var(--electric-text); font-weight: 700; }
+.t-usd { white-space: nowrap; font-family: var(--display); font-size: clamp(36px, 11vw, 56px); line-height: 1; font-variant-numeric: tabular-nums; }
+.t-usd small { font-size: 0.45em; letter-spacing: 0.02em; }
+.t-ars { text-align: right; font-size: 17px; line-height: 1.3; }
+.t-ars b { display: block; font-size: 22px; font-variant-numeric: tabular-nums; }
+.bump { animation: bump .35s var(--ease); }
+@keyframes bump { 40% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .bump { animation: none; } * { transition: none !important; } }
+
+.theme:focus-visible, .pack:focus-visible, .btn:focus-visible, .extra:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">Tomi</div>
+    <button type="button" class="theme" id="themeBtn" aria-label="Cambiar a modo oscuro">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <h1 id="title">Armá tu plan</h1>
+  <p class="lead">Mové las barras y mirá cuánto sale por mes. Es un punto de partida: después lo ajustamos juntos a lo que necesitás.</p>
+  <p class="sign">— Tomi</p>
+
+  <section aria-labelledby="h-packs">
+    <h2 id="h-packs">Empezá por un paquete</h2>
+    <p class="sub">O armalo desde cero más abajo.</p>
+    <div class="packs">
+      <button type="button" class="pack" data-pack="esencial" aria-pressed="false"><b>Esencial</b><span id="p-esencial"></span></button>
+      <button type="button" class="pack" data-pack="completo" aria-pressed="false"><b>Completo</b><span id="p-completo"></span></button>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-budget">
+    <h2 id="h-budget">¿Cuánto querés invertir?</h2>
+    <p class="sub">Elegí un monto por mes y te armo la mejor combinación que entra.</p>
+    <div class="row">
+      <div class="row-head"><span class="row-name">Por mes</span><span class="row-val" id="v-budget"></span></div>
+      <p class="row-note" id="n-budget"></p>
+      <input type="range" id="budget" min="100" max="600" step="10" value="250" aria-labelledby="h-budget">
+    </div>
+    <button type="button" class="btn solid budget-go" id="budgetGo">Armame el plan</button>
+    <p class="fit" id="fit" aria-live="polite"></p>
+  </section>
+
+  <section aria-labelledby="h-content">
+    <h2 id="h-content">Contenido por semana</h2>
+    <p class="sub">Incluye idea, guion, edición y publicación.</p>
+    <div id="sliders"></div>
+  </section>
+
+  <section aria-labelledby="h-extras">
+    <h2 id="h-extras">Extras</h2>
+    <p class="sub">Se hacen una sola vez y se reparten en los primeros 3 meses.</p>
+    <div id="extras"></div>
+    <p class="incl"><b>Siempre incluido:</b> estrategia base (pilares de contenido, tono y calendario) el primer mes.</p>
+  </section>
+
+  <section aria-labelledby="h-detail">
+    <h2 id="h-detail">Tu plan</h2>
+    <ul class="detail" id="detail"></ul>
+    <ul class="conds">
+      <li>Mínimo 3 meses.</li>
+      <li>1 ronda de cambios por pieza.</li>
+      <li>El precio está en dólares y se paga en pesos al dólar del día de la factura.</li>
+    </ul>
+    <div class="actions">
+      <button type="button" class="btn solid" id="waBtn">Mandármelo por WhatsApp</button>
+      <button type="button" class="btn" id="copyBtn">Copiar el plan</button>
+      <p class="copied" id="copied" aria-live="polite"></p>
+    </div>
+  </section>
+</div>
+
+<div class="total" role="status" aria-live="polite">
+  <div class="total-in">
+    <div class="t-label"><span>Tu plan por mes</span><span class="t-pack" id="tPack"></span></div>
+    <div class="t-usd" id="tUsd"></div>
+    <div class="t-ars"><b id="tArs"></b><span id="tRate"></span></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  /* ---------- Precios (editá acá) ---------- */
+  var PRECIOS = {
+    reel: 25,       // USD por reel
+    carrusel: 15,   // USD por carrusel o post
+    historia: 2     // USD por historia (foto)
+  };
+  var EXTRAS = [
+    { id: "manual", nombre: "Manual de marca completo", nota: "Colores, tipografías, tono y usos", usd: 120 },
+    { id: "landing", nombre: "Landing / portfolio web", nota: "Tu página propia, lista para compartir", usd: 100 }
+  ];
+  var MESES_EXTRAS = 3;   // los extras se reparten en este mínimo de meses
+  var SEMANAS = 4;        // semanas que se cobran por mes
+  var MINIMO = 100;       // abono mínimo en USD
+  var DOLAR = 1570;       // dólar por defecto; se cambia con ?dolar=1600 en el link
+  var PAQUETES = {
+    esencial: { reel: 1, carrusel: 1, historia: 5, extras: [] },
+    completo: { reel: 1, carrusel: 2, historia: 7, extras: ["manual", "landing"] }
+  };
+  var CONTENIDO = [
+    { id: "reel", nombre: "Reels", max: 5, una: "reel", varias: "reels" },
+    { id: "carrusel", nombre: "Carruseles o posts", max: 5, una: "carrusel", varias: "carruseles" },
+    { id: "historia", nombre: "Historias", max: 14, una: "historia", varias: "historias" }
+  ];
+
+  var params = new URLSearchParams(location.search);
+  var d = parseFloat((params.get("dolar") || "").replace(",", "."));
+  if (d > 0) DOLAR = d;
+  var cliente = (params.get("c") || "").trim().slice(0, 60);
+  var nombre = cliente.split(/\s+/)[0];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var fmtArs = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+  var fmtUsd = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
+  var st = { reel: 1, carrusel: 1, historia: 5, extras: {} };
+
+  if (nombre) { $("title").textContent = nombre + ", armá tu plan"; document.title = "Plan de " + nombre + " | Tomi"; }
+
+  /* ---------- Cálculo ---------- */
+  function calc(s) {
+    var semanal = 0, lines = [];
+    CONTENIDO.forEach(function (c) {
+      var n = s[c.id] || 0; if (!n) return;
+      var mes = n * SEMANAS, usd = mes * PRECIOS[c.id];
+      semanal += usd;
+      lines.push([mes + " " + (mes === 1 ? c.una : c.varias) + " (" + n + " por semana)", usd]);
+    });
+    var extras = 0;
+    EXTRAS.forEach(function (e) {
+      if (!s.extras[e.id]) return;
+      var cuota = e.usd / MESES_EXTRAS; extras += cuota;
+      lines.push([e.nombre + " (USD " + e.usd + " en " + MESES_EXTRAS + " cuotas)", cuota]);
+    });
+    lines.push(["Estrategia base", 0]);
+    var bruto = semanal + extras;
+    var total = Math.max(MINIMO, Math.round(bruto / 5) * 5);
+    return { total: total, bruto: bruto, lines: lines };
+  }
+  function ars(usd) { return "$" + fmtArs.format(Math.round(usd * DOLAR / 1000) * 1000); }
+  function samePack(s) {
+    for (var k in PAQUETES) {
+      var p = PAQUETES[k], ok = p.reel === s.reel && p.carrusel === s.carrusel && p.historia === s.historia;
+      EXTRAS.forEach(function (e) { if (!!s.extras[e.id] !== (p.extras.indexOf(e.id) !== -1)) ok = false; });
+      if (ok) return k;
+    }
+    return "";
+  }
+  function packState(k) {
+    var p = PAQUETES[k], ex = {};
+    p.extras.forEach(function (id) { ex[id] = true; });
+    return { reel: p.reel, carrusel: p.carrusel, historia: p.historia, extras: ex };
+  }
+
+  /* La mejor combinación que entra en el presupuesto: la más cara que no se pasa,
+     y entre iguales, la más pareja (que no sea todo historias). */
+  function bestFor(budget) {
+    var best = null, hist = [0, 3, 5, 7, 10, 14];
+    var combos = [];
+    for (var m = 0; m < (1 << EXTRAS.length); m++) combos.push(m);
+    for (var r = 0; r <= 5; r++) for (var c = 0; c <= 5; c++) for (var h = 0; h < hist.length; h++) combos.forEach(function (m) {
+      var ex = {}; EXTRAS.forEach(function (e, i) { if (m & (1 << i)) ex[e.id] = true; });
+      var s = { reel: r, carrusel: c, historia: hist[h], extras: ex };
+      if (r + c === 0) return;
+      var t = calc(s).bruto; if (t > budget || t < MINIMO * 0.9) return;
+      var balance = Math.min(r, 1) * 3 + Math.min(c, 2) + Math.min(hist[h], 5) / 5 + (r && c ? 2 : 0) - Math.abs(r * 2 - c) * 0.3;
+      var score = t + balance * 6;
+      if (!best || score > best.score) best = { s: s, score: score, t: t };
+    });
+    return best && best.s;
+  }
+
+  /* ---------- Pantalla ---------- */
+  function fill(el) {
+    var pct = (el.value - el.min) / (el.max - el.min) * 100;
+    el.style.setProperty("--pct", pct + "%");
+  }
+  var sliders = $("sliders");
+  CONTENIDO.forEach(function (c) {
+    var row = document.createElement("div"); row.className = "row";
+    row.innerHTML = '<div class="row-head"><label class="row-name" for="s-' + c.id + '">' + c.nombre + '</label><span class="row-val" id="v-' + c.id + '"></span></div>' +
+      '<p class="row-note" id="n-' + c.id + '"></p>' +
+      '<input type="range" id="s-' + c.id + '" min="0" max="' + c.max + '" step="1">';
+    sliders.appendChild(row);
+    var input = row.querySelector("input");
+    input.addEventListener("input", function () { st[c.id] = +input.value; render(true); });
+  });
+  var extrasEl = $("extras");
+  EXTRAS.forEach(function (e) {
+    var b = document.createElement("button"); b.type = "button"; b.className = "extra"; b.setAttribute("aria-pressed", "false"); b.dataset.id = e.id;
+    b.innerHTML = "<b>" + e.nombre + "</b><small>" + e.nota + '</small><span class="price">USD ' + e.usd + "</span>";
+    b.addEventListener("click", function () { st.extras[e.id] = !st.extras[e.id]; render(true); });
+    extrasEl.appendChild(b);
+  });
+  document.querySelectorAll(".pack").forEach(function (b) {
+    $("p-" + b.dataset.pack).textContent = "USD " + calc(packState(b.dataset.pack)).total + " por mes";
+    b.addEventListener("click", function () { st = packState(b.dataset.pack); $("fit").textContent = ""; render(true); });
+  });
+
+  var budget = $("budget");
+  function renderBudget() {
+    $("v-budget").textContent = "USD " + budget.value;
+    $("n-budget").textContent = "≈ " + ars(+budget.value) + " por mes";
+    fill(budget);
+  }
+  budget.addEventListener("input", renderBudget);
+  $("budgetGo").addEventListener("click", function () {
+    var s = bestFor(+budget.value);
+    if (!s) { $("fit").textContent = "Con ese monto no llego a armar un plan; probá con un poco más."; return; }
+    st = s; render(true);
+    $("fit").textContent = "Listo: te armé un plan de USD " + calc(st).total + " por mes. Podés ajustarlo abajo.";
+  });
+
+  var lastTotal = null;
+  function render(animate) {
+    CONTENIDO.forEach(function (c) {
+      var input = $("s-" + c.id), n = st[c.id];
+      input.value = n; fill(input);
+      $("v-" + c.id).textContent = n;
+      $("n-" + c.id).textContent = n ? (n * SEMANAS) + " por mes · USD " + PRECIOS[c.id] + " c/u" : "Sin " + c.varias;
+    });
+    document.querySelectorAll(".extra").forEach(function (b) { b.setAttribute("aria-pressed", st.extras[b.dataset.id] ? "true" : "false"); });
+    var pk = samePack(st);
+    document.querySelectorAll(".pack").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.pack === pk ? "true" : "false"); });
+
+    var r = calc(st);
+    $("tUsd").innerHTML = "USD " + r.total + " <small>/MES</small>";
+    $("tArs").textContent = ars(r.total);
+    $("tRate").textContent = "al dólar de hoy ($" + fmtArs.format(DOLAR) + ")";
+    $("tPack").textContent = pk ? "Paquete " + pk.charAt(0).toUpperCase() + pk.slice(1) : "";
+    if (animate && lastTotal !== null && lastTotal !== r.total) {
+      var el = $("tUsd"); el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
+    }
+    lastTotal = r.total;
+
+    var det = $("detail"); det.innerHTML = "";
+    r.lines.forEach(function (l) {
+      var li = document.createElement("li");
+      li.innerHTML = "<span></span><span></span>";
+      li.children[0].textContent = l[0];
+      li.children[1].textContent = l[1] ? "USD " + fmtUsd.format(l[1]) : "Incluida";
+      det.appendChild(li);
+    });
+    if (r.bruto < MINIMO) {
+      var li = document.createElement("li");
+      li.innerHTML = "<span>Abono mínimo</span><span>USD " + MINIMO + "</span>";
+      det.appendChild(li);
+    }
+  }
+
+  function texto() {
+    var r = calc(st), pk = samePack(st);
+    var t = "Hola Tomi! " + (cliente ? "Soy " + cliente + ". " : "") + "Armé este plan" + (pk ? " (paquete " + pk + ")" : "") + ":\n";
+    r.lines.forEach(function (l) { t += "• " + l[0] + "\n"; });
+    t += "Total: USD " + r.total + " por mes (≈ " + ars(r.total) + " al dólar de $" + fmtArs.format(DOLAR) + ").";
+    return t;
+  }
+  $("waBtn").addEventListener("click", function () {
+    window.open("https://wa.me/?text=" + encodeURIComponent(texto()), "_blank", "noopener");
+  });
+  $("copyBtn").addEventListener("click", function () {
+    var done = function () { $("copied").textContent = "Copiado. Pegámelo donde quieras."; };
+    if (navigator.clipboard) navigator.clipboard.writeText(texto()).then(done, function () { $("copied").textContent = "No pude copiar; probá con WhatsApp."; });
+  });
+
+  /* ---------- Tema ---------- */
+  var themeBtn = $("themeBtn");
+  function isDark() {
+    var t = document.documentElement.getAttribute("data-theme");
+    if (t) return t === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function syncTheme() {
+    var dark = isDark();
+    themeBtn.setAttribute("aria-label", dark ? "Cambiar a modo claro" : "Cambiar a modo oscuro");
+    var m = document.querySelector('meta[name="theme-color"]'); if (m) m.setAttribute("content", dark ? "#000000" : "#FFFFFF");
+  }
+  themeBtn.addEventListener("click", function () {
+    var next = isDark() ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("tema", next); } catch (e) {}
+    syncTheme();
+  });
+  syncTheme();
+
+  renderBudget();
+  render(false);
+})();
+</script>
+</body>
+</html>
