@@ -8,11 +8,12 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/respuestas") {
       const handler = handlers[request.method];
-      if (!handler) return new Response("Method not allowed", { status: 405, headers: { allow: "GET, POST, DELETE" } });
+      if (!handler) return new Response("Method not allowed", { status: 405, headers: { allow: "GET, POST, DELETE", "x-content-type-options": "nosniff", "cache-control": "no-store" } });
       try {
         return await handler({ request, env });
       } catch (err) {
-        return new Response(JSON.stringify({ error: "server_error" }), { status: 500, headers: { "content-type": "application/json" } });
+        console.error("api", err);
+        return new Response(JSON.stringify({ error: "server_error" }), { status: 500, headers: { "content-type": "application/json", "x-content-type-options": "nosniff", "cache-control": "no-store" } });
       }
     }
     return env.ASSETS.fetch(request);
