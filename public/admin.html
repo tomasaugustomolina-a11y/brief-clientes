@@ -130,6 +130,9 @@ dd { margin: 0; overflow-wrap: anywhere; }
   "use strict";
   var B = window.BRIEF, FLOW = [];
   B.secciones.forEach(function (s) { s.preguntas.forEach(function (q) { q.sec = s.nombre; FLOW.push(q); }); });
+  // Pregunta que el formulario salteó por otra respuesta (skipIf en preguntas.js)
+  function salteada(q, v) { return !!(q.skipIf && String(v[q.skipIf.id] || "").split("; ").indexOf(q.skipIf.v) !== -1); }
+  function celda(q, v) { return v[q.id] || (salteada(q, v) ? "(salteada)" : ""); }
   var $ = function (id) { return document.getElementById(id); };
   var pass = "", rows = [];
   try { pass = sessionStorage.getItem("brief-admin") || ""; } catch (e) {}
@@ -170,7 +173,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
       var v = r.respuestas || {};
       var secciones = B.secciones.map(function (s) {
         return '<div><h3>' + esc(s.nombre) + '</h3><dl>' + s.preguntas.map(function (q) {
-          return '<dt>' + esc(q.q) + '</dt><dd>' + (v[q.id] ? esc(v[q.id]) : '<span class="muted">Sin responder</span>') + '</dd>';
+          return '<dt>' + esc(q.q) + '</dt><dd>' + (v[q.id] ? esc(v[q.id]) : '<span class="muted">' + (salteada(q, v) ? "Salteada: lo vemos en la llamada" : "Sin responder") + '</span>') + '</dd>';
         }).join("") + '</dl></div>';
       }).join("");
       return '<details><summary><strong>' + esc(r.nombre || "Sin nombre") + '</strong><span class="when">' + esc(fecha(r.creado)) + '</span>' +
@@ -239,7 +242,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
   }
   $("dlJson").addEventListener("click", function () {
     var out = rows.map(function (r) {
-      return { id: r.id, fecha: r.creado, link: r.cliente || "", respuestas: FLOW.map(function (q) { return { seccion: q.sec, pregunta: q.q, respuesta: (r.respuestas || {})[q.id] || "" }; }) };
+      return { id: r.id, fecha: r.creado, link: r.cliente || "", respuestas: FLOW.map(function (q) { return { seccion: q.sec, pregunta: q.q, respuesta: celda(q, r.respuestas || {}) }; }) };
     });
     bajar(new Blob([JSON.stringify(out, null, 2)], { type: "application/json" }), "briefs-clientes-" + hoy() + ".json");
   });
@@ -256,7 +259,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
     $("panelMsg").textContent = "";
     loadXlsx().then(function () {
       var head = ["Fecha", "Link"].concat(FLOW.map(function (q) { return q.q; }));
-      var aoa = [head].concat(rows.map(function (r) { var v = r.respuestas || {}; return [fecha(r.creado), r.cliente || ""].concat(FLOW.map(function (q) { return v[q.id] || ""; })); }));
+      var aoa = [head].concat(rows.map(function (r) { var v = r.respuestas || {}; return [fecha(r.creado), r.cliente || ""].concat(FLOW.map(function (q) { return celda(q, v); })); }));
       var ws = XLSX.utils.aoa_to_sheet(aoa);
       ws["!cols"] = head.map(function (h, i) { return { wch: i < 2 ? 14 : 30 }; });
       var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Clientes");

@@ -8,8 +8,7 @@ window.BRIEF = {
       preguntas: [
         { id: "nombre", type: "text", req: true, q: "¿Cómo te llamás?", ph: "Nombre y apellido", auto: "name" },
         { id: "contacto", type: "text", req: true, q: "¿Por dónde te escribimos?", note: "Escribí tu número de teléfono o tu mail.", ph: "WhatsApp o mail", auto: "tel" },
-        { id: "rubro", type: "one", req: true, q: "¿A qué te dedicás?",
-          o: ["Arquitectura o interiorismo", "Diseño", "Fotografía o video", "Salud y bienestar", "Psicología o terapia", "Estética y belleza", "Abogacía o contabilidad", "Inmobiliaria", "Coaching o consultoría", "Educación", "Gastronomía", "Arte o música"] },
+        { id: "rubro", type: "text", req: true, q: "¿A qué te dedicás?", note: "Contalo con tus palabras.", ph: "Ej.: arquitecta, nutricionista" },
         { id: "vender", type: "many", req: true, q: "¿Qué te gustaría vender más?",
           o: ["Servicios uno a uno", "Proyectos completos", "Asesorías", "Cursos o talleres", "Productos físicos", "Productos digitales"] },
         { id: "canales", type: "many", req: true, q: "Hoy, ¿cómo te llegan los clientes?",
@@ -25,20 +24,23 @@ window.BRIEF = {
           o: ["Conseguir más clientes", "Poder cobrar más", "Que me reconozcan en lo mío", "Encontrar socios o trabajo", "Lanzar un curso o producto", "Ordenar lo que ya hago"] },
         { id: "exito", type: "one", req: true, q: "En 6 meses, ¿qué te haría decir «valió la pena»?",
           o: ["Que me escriban por redes todas las semanas", "Cerrar clientes nuevos gracias a las redes", "Que me conozcan en mi rubro", "Tener un perfil que me dé orgullo mostrar", "Publicar seguido sin que me cueste"] },
-        { id: "fecha", type: "one", req: true, q: "¿Se viene alguna fecha importante?",
-          o: ["No por ahora", "Un lanzamiento", "Un evento o feria", "Mi temporada alta"] }
+        { id: "fecha", type: "one", req: true, q: "¿Tenés algo importante en los próximos meses?", note: "Así sabemos si hay algo urgente para priorizar.",
+          o: ["No, nada en particular", "Lanzo un negocio o emprendimiento", "Lanzo un producto o servicio nuevo", "Un evento, feria o charla", "Se viene mi temporada alta"] }
       ]
     },
     {
       id: "publico", nombre: "Tu cliente ideal",
       preguntas: [
-        { id: "quien", type: "many", req: true, q: "¿Quién es tu cliente ideal?",
+        { id: "conoce", type: "one", req: true, q: "¿Sabés quién es tu cliente ideal?", note: "Es la persona con la que más te gusta trabajar y que mejor te paga.",
+          o: ["Sí, lo tengo claro", "Más o menos", "No, hay que encontrarlo juntos"] },
+        /* Si responde que no lo conoce, estas cuatro se saltean y lo trabajamos en la llamada. */
+        { id: "quien", type: "many", req: true, skipIf: { id: "conoce", v: "No, hay que encontrarlo juntos" }, q: "¿Quién te contrata o te gustaría que te contrate?",
           o: ["Particulares", "Parejas o familias", "Emprendedores", "Empresas o pymes", "Gente de mi rubro"] },
-        { id: "edad", type: "many", req: true, q: "¿Qué edad tiene, más o menos?",
+        { id: "edad", type: "many", req: true, skipIf: { id: "conoce", v: "No, hay que encontrarlo juntos" }, q: "¿Qué edad tiene, más o menos?",
           o: ["18 a 24", "25 a 34", "35 a 44", "45 a 54", "55 o más"] },
-        { id: "donde", type: "one", req: true, q: "¿Dónde está?",
+        { id: "donde", type: "one", req: true, skipIf: { id: "conoce", v: "No, hay que encontrarlo juntos" }, q: "¿Dónde está?",
           o: ["En mi ciudad", "En todo el país", "En cualquier lado, trabajo online"] },
-        { id: "dudas", type: "many", max: 2, req: true, q: "¿Qué duda tiene antes de contratarte?",
+        { id: "dudas", type: "many", max: 2, req: true, skipIf: { id: "conoce", v: "No, hay que encontrarlo juntos" }, q: "¿Qué duda tiene antes de contratarte?",
           o: ["Si le alcanza la plata", "Si voy a cumplir los tiempos", "Si le va a gustar el resultado", "Cómo es el proceso", "Si puede confiar en mí", "Si hay alguien más barato"] }
       ]
     },

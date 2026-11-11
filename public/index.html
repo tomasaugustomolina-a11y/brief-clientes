@@ -219,7 +219,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     s.preguntas.forEach(function (q, qi) { q.sec = s; q.si = si; q.qi = qi; q.n = s.preguntas.length; FLOW.push(q); });
   });
 
-  var KEY = "brief-tomi-v1";
+  var KEY = "brief-tomi-v2";
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var $ = function (id) { return document.getElementById(id); };
   var secPart = $("secPart");
@@ -240,6 +240,17 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   if (cliente) st.cliente = cliente;
   var resumeAt = 0;
   if (hadDraft) { try { resumeAt = Math.min(JSON.parse(localStorage.getItem(KEY)).i, FLOW.length - 1); } catch (e) { resumeAt = 0; } }
+  if (resumeAt > 0 && !visible(FLOW[resumeAt])) resumeAt = prevIndex(resumeAt);
+  if (resumeAt < 0) resumeAt = 0;
+
+  /* Preguntas que se saltean según otra respuesta (skipIf en preguntas.js). */
+  function visible(q) {
+    if (!q || !q.skipIf) return true;
+    var a = st.a[q.skipIf.id];
+    return !(a && a.sel.indexOf(q.skipIf.v) !== -1);
+  }
+  function nextIndex(i) { var n = i + 1; while (n < FLOW.length && !visible(FLOW[n])) n++; return n; }
+  function prevIndex(i) { var n = i - 1; while (n >= 0 && !visible(FLOW[n])) n--; return n; }
 
   function A(id) { return st.a[id] || (st.a[id] = { sel: [], otro: "", text: "" }); }
   if (nombreLink && !A("nombre").text) A("nombre").text = nombreLink;
@@ -340,13 +351,14 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     var q = FLOW[i];
     if (secName.textContent !== q.sec.nombre) swapSection(q.sec.nombre);
     secPart.textContent = "Parte " + (q.si + 1) + " de " + B.secciones.length;
-    barFill.style.width = ((q.qi + 1) / q.n * 100) + "%";
+    var vis = q.sec.preguntas.filter(visible);
+    barFill.style.width = ((vis.indexOf(q) + 1) / vis.length * 100) + "%";
     backBtn.hidden = false; foot.hidden = false; where.style.visibility = "visible";
     refreshNext();
   }
   function refreshNext() {
     if (st.i < 0 || st.i >= FLOW.length) return;
-    var q = FLOW[st.i], last = st.i === FLOW.length - 1;
+    var q = FLOW[st.i], last = nextIndex(st.i) >= FLOW.length;
     var bad = !!problem(q);
     nextBtn.setAttribute("aria-disabled", bad ? "true" : "false");
     nextBtn.textContent = last ? "Enviar respuestas" : (!q.req && isEmpty(q) ? "Saltar" : "Siguiente");
@@ -412,15 +424,16 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     if (st.i === -1) { go(hadDraft ? resumeAt : 0, "up"); return; }
     var q = FLOW[st.i], p = problem(q);
     if (p) { showErr(p); return; }
-    if (st.i < FLOW.length - 1) { go(st.i + 1, "up"); return; }
+    var n = nextIndex(st.i);
+    if (n < FLOW.length) { go(n, "up"); return; }
     send();
   }
-  function backward() { if (busy || st.i <= -1) return; go(st.i - 1, "back"); }
+  function backward() { if (busy || st.i <= -1) return; go(prevIndex(st.i), "back"); }
 
   function send() {
     if (nextBtn.classList.contains("busy")) return;
     var respuestas = {};
-    FLOW.forEach(function (q) { respuestas[q.id] = value(q); });
+    FLOW.forEach(function (q) { respuestas[q.id] = visible(q) ? value(q) : ""; });
     nextBtn.classList.add("busy"); nextBtn.textContent = "Enviando…";
     showErr("");
     fetch("/api/respuestas", {
@@ -504,7 +517,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     var atBottom = current.scrollTop + current.clientHeight >= current.scrollHeight - 2;
     if (dy > 0 && atBottom && st.i < FLOW.length) {
       if (st.i >= 0 && problem(FLOW[st.i])) { showErr(problem(FLOW[st.i])); return; }
-      if (st.i === FLOW.length - 1) return; // enviar solo con el botón
+      if (nextIndex(st.i) >= FLOW.length) return; // enviar solo con el botón
       forward();
     } else if (dy < 0 && atTop && st.i >= 0 && st.i < FLOW.length) backward();
   }, { passive: true });
