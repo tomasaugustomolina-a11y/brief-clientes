@@ -1,5 +1,7 @@
 /* Preguntas del brief. Las usan el formulario (index.html) y la página privada (admin.html).
-   type: "text" | "long" | "one" | "many". En "one" y "many" siempre se agrega la opción "Otro". */
+   type: "text" | "long" | "one" | "many". En "one" y "many" siempre se agrega la opción "Otro".
+   solo: en "many", la opción que no se puede combinar con otras (ej. "Nada, todo bien").
+   skipIf: la pregunta se saltea si otra respuesta tiene ese valor. */
 window.BRIEF = {
   otro: "Otro",
   secciones: [
@@ -7,13 +9,13 @@ window.BRIEF = {
       id: "vos", nombre: "Sobre vos",
       preguntas: [
         { id: "nombre", type: "text", req: true, q: "¿Cómo te llamás?", ph: "Nombre y apellido", auto: "name" },
-        { id: "contacto", type: "text", req: true, q: "¿Por dónde te escribimos?", note: "Escribí tu número de teléfono o tu mail.", ph: "WhatsApp o mail", auto: "tel" },
+        { id: "contacto", type: "text", req: true, q: "¿Por dónde te escribo?", note: "Escribí tu número de teléfono o tu mail.", ph: "WhatsApp o mail", auto: "tel" },
         { id: "rubro", type: "text", req: true, q: "¿A qué te dedicás?", note: "Contalo con tus palabras.", ph: "Ej.: arquitecta, nutricionista" },
         { id: "vender", type: "many", req: true, q: "¿Qué te gustaría vender más?",
           o: ["Servicios uno a uno", "Proyectos completos", "Asesorías", "Cursos o talleres", "Productos físicos", "Productos digitales"] },
-        { id: "canales", type: "many", req: true, q: "Hoy, ¿cómo te llegan los clientes?",
+        { id: "canales", type: "many", req: true, solo: "Todavía no tengo clientes", q: "Hoy, ¿cómo te llegan los clientes?",
           o: ["Me recomiendan", "Instagram", "TikTok", "Google", "LinkedIn", "Conocidos", "Todavía no tengo clientes"] },
-        { id: "diferencial", type: "many", max: 2, req: true, q: "¿Por qué te eligen a vos y no a otro?",
+        { id: "diferencial", type: "many", max: 2, req: true, solo: "Todavía no lo sé", q: "¿Por qué te eligen a vos y no a otro?",
           o: ["Por cómo trato a la gente", "Por la calidad de lo que entrego", "Porque cumplo los tiempos", "Por el precio", "Porque me especialicé en algo puntual", "Por mi experiencia", "Por mi estilo", "Todavía no lo sé"] }
       ]
     },
@@ -24,7 +26,7 @@ window.BRIEF = {
           o: ["Conseguir más clientes", "Poder cobrar más", "Que me reconozcan en lo mío", "Encontrar socios o trabajo", "Lanzar un curso o producto", "Ordenar lo que ya hago"] },
         { id: "exito", type: "one", req: true, q: "En 6 meses, ¿qué te haría decir «valió la pena»?",
           o: ["Que me escriban por redes todas las semanas", "Cerrar clientes nuevos gracias a las redes", "Que me conozcan en mi rubro", "Tener un perfil que me dé orgullo mostrar", "Publicar seguido sin que me cueste"] },
-        { id: "fecha", type: "one", req: true, q: "¿Tenés algo importante en los próximos meses?", note: "Así sabemos si hay algo urgente para priorizar.",
+        { id: "fecha", type: "one", req: true, q: "¿Tenés algo importante en los próximos meses?", note: "Así sé si hay algo urgente para priorizar.",
           o: ["No, nada en particular", "Lanzo un negocio o emprendimiento", "Lanzo un producto o servicio nuevo", "Un evento, feria o charla", "Se viene mi temporada alta"] }
       ]
     },
@@ -48,13 +50,13 @@ window.BRIEF = {
       id: "redes", nombre: "Tus redes hoy",
       preguntas: [
         { id: "usuario", type: "text", q: "¿Cuál es tu red principal?", ph: "@usuario o link", note: "Si todavía no tenés, seguí de largo." },
-        { id: "redes_usa", type: "many", req: true, q: "¿Qué redes usás para tu trabajo?",
+        { id: "redes_usa", type: "many", req: true, solo: "Ninguna todavía", q: "¿Qué redes usás para tu trabajo?",
           o: ["Instagram", "TikTok", "LinkedIn", "Facebook", "YouTube", "Web propia", "Ninguna todavía"] },
-        { id: "redes_crecer", type: "many", max: 2, req: true, q: "¿Dónde te gustaría crecer?",
-          o: ["Instagram", "TikTok", "LinkedIn", "YouTube", "No sé, que me recomienden"] },
+        { id: "redes_crecer", type: "many", max: 2, req: true, solo: "No sé, recomendame vos", q: "¿Dónde te gustaría crecer?",
+          o: ["Instagram", "TikTok", "LinkedIn", "YouTube", "No sé, recomendame vos"] },
         { id: "frecuencia", type: "one", req: true, q: "¿Cada cuánto publicás?",
           o: ["Casi nunca", "Menos de una vez por semana", "Una o dos veces por semana", "Tres o más veces por semana"] },
-        { id: "identidad", type: "many", req: true, q: "¿Qué tenés armado de tu imagen?",
+        { id: "identidad", type: "many", req: true, solo: "Nada todavía", q: "¿Qué tenés armado de tu imagen?",
           o: ["Logo", "Colores", "Tipografías", "Fotos profesionales mías", "Fotos de mis trabajos", "Nada todavía"] }
       ]
     },
@@ -68,7 +70,7 @@ window.BRIEF = {
         { id: "referentes", type: "long", q: "¿Hay alguna cuenta que te guste cómo comunica?", ph: "Usuarios o links, de cualquier rubro", note: "Opcional, pero ayuda mucho." },
         { id: "camara", type: "one", req: true, q: "¿Cómo te llevás con la cámara?",
           o: ["Me muero de vergüenza", "Me cuesta, pero me animo", "Bien, con un poco de práctica", "Me encanta"] },
-        { id: "no_mostrar", type: "many", req: true, q: "¿Hay algo que prefieras no mostrar?",
+        { id: "no_mostrar", type: "many", req: true, solo: "Nada, todo bien", q: "¿Hay algo que prefieras no mostrar?",
           o: ["Mi cara", "Mi voz", "Mi familia", "Mi casa", "Mis opiniones", "Mis precios", "Nada, todo bien"] }
       ]
     },

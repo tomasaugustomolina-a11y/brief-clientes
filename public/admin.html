@@ -13,16 +13,16 @@
 </script>
 <style>
 :root {
-  --paper: #FFFFFF; --ink: #000000; --electric: #2323FF; --on-electric: #FFFFFF;
+  --paper: #FFFFFF; --ink: #000000; --electric: #2323FF; --electric-text: #2323FF; --on-electric: #FFFFFF;
   --muted: #5B5B66; --veil: rgba(0, 0, 0, 0.08);
   --display: "Anton", Impact, "Arial Narrow", sans-serif;
   --text: "Tinos", "Times New Roman", Times, serif;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --on-electric: #FFFFFF; --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark; }
+  :root:not([data-theme="light"]) { --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --electric-text: #7C7CFF; --on-electric: #FFFFFF; --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark; }
 }
-:root[data-theme="dark"] { --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --on-electric: #FFFFFF; --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark; }
+:root[data-theme="dark"] { --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --electric-text: #7C7CFF; --on-electric: #FFFFFF; --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark; }
 * { box-sizing: border-box; }
 body {
   margin: 0; background: var(--paper); color: var(--ink);
@@ -59,7 +59,7 @@ p { margin: 0; }
 }
 .line:focus { border-bottom-color: var(--electric); }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
-.msg { font-weight: 700; color: var(--electric); }
+.msg { font-weight: 700; color: var(--electric-text); }
 .block { display: flex; flex-direction: column; gap: 14px; }
 #panel { gap: 44px; }
 #panel > h1 { margin-bottom: -16px; }
@@ -72,7 +72,7 @@ summary strong { font-size: 21px; }
 summary .when { color: var(--muted); font-size: 16px; white-space: nowrap; }
 summary .what { grid-column: 1 / -1; color: var(--muted); font-size: 16px; font-style: italic; }
 .detail { padding: 0 0 22px; display: flex; flex-direction: column; gap: 18px; }
-.detail h3 { margin: 0 0 6px; font-weight: 700; font-size: 17px; color: var(--electric); }
+.detail h3 { margin: 0 0 6px; font-weight: 700; font-size: 17px; color: var(--electric-text); }
 dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 6px 18px; font-size: 16px; }
 dt { color: var(--muted); }
 dd { margin: 0; overflow-wrap: anywhere; }
@@ -116,9 +116,10 @@ dd { margin: 0; overflow-wrap: anywhere; }
     </div>
     <div class="block">
       <h2>Link para un cliente</h2>
-      <p class="muted">Escribí el nombre y mandale este link. El formulario lo saluda por su nombre y la respuesta queda marcada con él.</p>
+      <p class="muted">Escribí el nombre como querés que aparezca, con tildes y mayúsculas, y mandale este link. El formulario lo saluda por su nombre y la respuesta queda marcada con él.</p>
       <input class="line" id="clientName" type="text" placeholder="Nombre del cliente" aria-label="Nombre del cliente">
       <p class="linkout" id="clientLink"></p>
+      <p class="muted" id="clientHola"></p>
       <div class="row"><button class="btn" type="button" id="copyLink">Copiar link</button><span class="msg" id="copyMsg"></span></div>
     </div>
   </section>
@@ -224,9 +225,14 @@ dd { margin: 0; overflow-wrap: anywhere; }
   syncTheme();
 
   /* Link por cliente */
-  function slug(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50); }
-  function link() { var s = slug($("clientName").value); return location.origin + "/" + (s ? "?c=" + s : ""); }
-  function showLink() { $("clientLink").textContent = link(); }
+  // El nombre viaja tal cual (con tildes), así el formulario lo escribe bien.
+  function nombre() { return $("clientName").value.replace(/\s+/g, " ").trim().slice(0, 50); }
+  function link() { var n = nombre(); return location.origin + "/" + (n ? "?c=" + encodeURIComponent(n).replace(/%20/g, "+") : ""); }
+  function showLink() {
+    var n = nombre();
+    $("clientLink").textContent = link();
+    $("clientHola").textContent = n ? "Lo va a saludar así: «Hola, " + n.split(" ")[0] + ".»" : "";
+  }
   $("clientName").addEventListener("input", showLink); showLink();
   $("copyLink").addEventListener("click", function () {
     var t = link();
