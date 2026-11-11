@@ -20,11 +20,14 @@ function sameText(a, b) {
 }
 
 // La contraseña de /admin vive como secreto ADMIN_PASSWORD en Cloudflare, nunca en el repositorio.
-async function isAdmin(request, env) {
+// Devuelve null si está bien, o la respuesta de error a mandar.
+async function adminError(request, env) {
+  const secret = String(env.ADMIN_PASSWORD || "").trim();
+  if (!secret) return json({ error: "no_password_set" }, 503);
   const h = request.headers.get("authorization") || "";
-  const pass = h.startsWith("Bearer ") ? h.slice(7) : "";
-  if (!pass || !env.ADMIN_PASSWORD) return false;
-  return sameText(await sha256Hex(pass), await sha256Hex(String(env.ADMIN_PASSWORD)));
+  const pass = (h.startsWith("Bearer ") ? h.slice(7) : "").trim();
+  if (!pass || !sameText(await sha256Hex(pass), await sha256Hex(secret))) return json({ error: "unauthorized" }, 401);
+  return null;
 }
 
 export async function onRequestPost({ request, env }) {
@@ -66,7 +69,8 @@ export async function onRequestPost({ request, env }) {
 }
 
 export async function onRequestGet({ request, env }) {
-  if (!(await isAdmin(request, env))) return json({ error: "unauthorized" }, 401);
+  const denied = await adminError(request, env);
+  if (denied) return denied;
   const { results } = await env.DB.prepare(
     "SELECT id, creado, cliente, nombre, rubro, respuestas FROM respuestas ORDER BY creado DESC LIMIT 1000"
   ).all();
@@ -80,7 +84,8 @@ export async function onRequestGet({ request, env }) {
 }
 
 export async function onRequestDelete({ request, env }) {
-  if (!(await isAdmin(request, env))) return json({ error: "unauthorized" }, 401);
+  const denied = await adminError(request, env);
+  if (denied) return denied;
   const id = new URL(request.url).searchParams.get("id") || "";
   if (!/^[0-9a-f-]{36}$/.test(id)) return json({ error: "bad_id" }, 400);
   await env.DB.prepare("DELETE FROM respuestas WHERE id = ?1").bind(id).run();

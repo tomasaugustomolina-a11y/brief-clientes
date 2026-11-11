@@ -1,6 +1,8 @@
 name = "brief-clientes"
 main = "src/worker.js"
 compatibility_date = "2025-09-01"
+# Conserva las variables cargadas a mano en el panel de Cloudflare al publicar.
+keep_vars = true
 
 [assets]
 directory = "./public"

@@ -127,7 +127,12 @@ dd { margin: 0; overflow-wrap: anywhere; }
 
   function api(method, qs) {
     return fetch("/api/respuestas" + (qs || ""), { method: method, headers: { authorization: "Bearer " + pass } })
-      .then(function (r) { if (r.status === 401) throw new Error("auth"); if (!r.ok) throw new Error("http"); return r.json(); });
+      .then(function (r) {
+        if (r.status === 401) throw new Error("auth");
+        if (r.status === 503) throw new Error("nopass");
+        if (!r.ok) throw new Error("http");
+        return r.json();
+      });
   }
 
   function load() {
@@ -168,7 +173,11 @@ dd { margin: 0; overflow-wrap: anywhere; }
     e.preventDefault();
     pass = $("pass").value.trim();
     $("loginMsg").textContent = "";
-    load().catch(function (err) { $("loginMsg").textContent = err.message === "auth" ? "La contraseña no es correcta." : "No se pudo conectar. Probá de nuevo."; });
+    load().catch(function (err) {
+      $("loginMsg").textContent = err.message === "auth" ? "La contraseña no coincide con la que está cargada en Cloudflare."
+        : err.message === "nopass" ? "Cloudflare todavía no tiene la contraseña: falta el secreto ADMIN_PASSWORD en Settings > Variables and Secrets."
+        : "No se pudo conectar. Probá de nuevo.";
+    });
   });
   if (pass) load().catch(function () { pass = ""; });
 
