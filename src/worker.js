@@ -8,14 +8,14 @@ const routes = {
 };
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const handlers = routes[url.pathname];
     if (handlers) {
       const handler = handlers[request.method];
       if (!handler) return new Response("Method not allowed", { status: 405, headers: { allow: "GET, POST, DELETE" } });
       try {
-        return await handler({ request, env });
+        return await handler({ request, env, ctx });
       } catch (err) {
         return new Response(JSON.stringify({ error: "server_error" }), { status: 500, headers: { "content-type": "application/json" } });
       }

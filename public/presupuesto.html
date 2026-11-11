@@ -153,6 +153,21 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
 .conds li { margin-bottom: 6px; }
 .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
 .copied { margin: 4px 0 0; font-weight: 700; color: var(--electric-text); min-height: 1.45em; }
+.form-title { margin: 0; font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.05; text-transform: uppercase; }
+.field { display: flex; flex-direction: column; gap: 2px; font-weight: 700; font-size: 18px; }
+.line {
+  width: 100%; font: inherit; font-weight: 400; font-size: 21px; color: var(--ink); background: transparent;
+  border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; padding: 10px 2px; outline: none;
+}
+.line::placeholder { color: var(--muted); opacity: 1; }
+.line:focus { border-bottom-color: var(--electric); }
+.line[aria-invalid="true"] { border-bottom-color: var(--electric); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.sent { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; outline: none; }
+.sent p { margin: 0; }
+.sent svg { width: 72px; height: 72px; }
+.sent circle { fill: var(--electric); }
+.sent path { fill: none; stroke: var(--on-electric); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Total fijo abajo */
 .total {
@@ -232,10 +247,23 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
       <li><b>Una ronda de cambios por pieza:</b> antes de publicar te muestro cada pieza, me marcás de una sola vez todo lo que quieras ajustar (textos, cortes, música, colores) y lo corrijo.</li>
       <li>El precio queda fijo durante 3 meses y después se actualiza por inflación.</li>
     </ul>
-    <div class="actions">
-      <button type="button" class="btn solid" id="waBtn">Mandármelo por WhatsApp</button>
-      <button type="button" class="btn" id="copyBtn">Copiar el plan</button>
-      <p class="copied" id="copied" aria-live="polite"></p>
+    <form class="actions" id="sendForm" novalidate>
+      <h3 class="form-title">Mandámelo y lo charlamos</h3>
+      <label class="field"><span>¿Cómo te llamás?</span>
+        <input class="line" id="fNombre" type="text" autocomplete="name" maxlength="80" required>
+      </label>
+      <label class="field"><span>¿Por dónde te escribo?</span>
+        <input class="line" id="fContacto" type="text" autocomplete="tel" maxlength="120" placeholder="WhatsApp, Instagram o mail" required>
+      </label>
+      <input class="hp" id="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" class="btn solid" id="formBtn">Mandámelo</button>
+      <p class="copied" id="sendMsg" role="status" aria-live="polite"></p>
+    </form>
+    <div class="sent" id="sent" hidden tabindex="-1">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12"/><path d="M6.5 12.5l3.8 3.8 7.2-8"/></svg>
+      <p class="form-title" id="sentTitle">¡Listo! Ya me llegó tu plan.</p>
+      <p>Te escribo pronto para charlarlo y ajustarlo a lo que necesites.</p>
+      <p class="sign">— Tomi</p>
     </div>
   </section>
 </div>
@@ -266,7 +294,6 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   ];
   var MESES_EXTRAS = 3;   // los extras se reparten en los 3 meses mínimos
   var MINIMO = 100;       // abono mínimo en USD
-  var WHATSAPP = "";      // tu número con código de país, sin + ni espacios (ej. 5493511234567)
   var DOLAR = 1570;       // dólar por defecto; se cambia con ?dolar=1600 en el link
   var PAQUETES = {
     esencial: { reel: 4, carrusel: 4, historia: 20, extras: [] },
@@ -422,34 +449,47 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     return out;
   }
 
-  function texto() {
-    var pk = samePack(st);
-    var t = "Hola Tomi! " + (cliente ? "Soy " + cliente + ". " : "") + "Armé este plan" + (pk ? " (paquete " + pk + ")" : "") + ":\n";
-    items().forEach(function (l) { t += "• " + l + "\n"; });
-    t += "Total: " + money(total(st)) + " por mes.";
-    return t;
-  }
-  // Guarda el plan en el panel de Tomi (/admin) y abre WhatsApp con el detalle.
-  function guardar() {
-    var pk = samePack(st);
-    try {
-      fetch("/api/presupuestos", {
-        method: "POST", keepalive: true, headers: { "content-type": "application/json" },
-        body: JSON.stringify({ cliente: cliente, items: items(), total: total(st), paquete: pk, dolar: DOLAR })
-      }).catch(function () {});
-    } catch (e) {}
+  /* ---------- Mandar el plan: se guarda en /admin y a Tomi le llega un mail ---------- */
+  var fNombre = $("fNombre"), fContacto = $("fContacto"), enviando = false;
+  if (cliente) fNombre.value = cliente;
+  function faltante() {
+    if (!fNombre.value.trim()) return fNombre;
+    if (!fContacto.value.trim()) return fContacto;
+    return null;
   }
   function enviar() {
-    guardar();
-    window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(texto()), "_blank", "noopener");
+    if (enviando) return;
+    var f = faltante();
+    [fNombre, fContacto].forEach(function (el) { el.removeAttribute("aria-invalid"); });
+    if (f) {
+      f.setAttribute("aria-invalid", "true");
+      $("sendMsg").textContent = f === fNombre ? "Contame cómo te llamás." : "Dejame por dónde te escribo.";
+      f.focus({ preventScroll: true });
+      f.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    enviando = true; $("formBtn").disabled = $("sendBtn").disabled = true;
+    $("sendMsg").textContent = "Mandando…";
+    fetch("/api/presupuestos", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        hp: $("hp").value, cliente: cliente, nombre: fNombre.value.trim(), contacto: fContacto.value.trim(),
+        items: items(), total: total(st), paquete: samePack(st), dolar: DOLAR
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error("http");
+      $("sendForm").hidden = true; $("sent").hidden = false;
+      $("sentTitle").textContent = "¡Listo, " + fNombre.value.trim().split(/\s+/)[0] + "! Ya me llegó tu plan.";
+      $("sendBtn").textContent = "Enviado";
+      $("sent").focus({ preventScroll: true });
+      $("sent").scrollIntoView({ behavior: "smooth", block: "center" });
+    }).catch(function () {
+      enviando = false; $("formBtn").disabled = $("sendBtn").disabled = false;
+      $("sendMsg").textContent = "No se pudo mandar. Revisá tu conexión y probá de nuevo.";
+    });
   }
-  $("waBtn").addEventListener("click", enviar);
+  $("sendForm").addEventListener("submit", function (e) { e.preventDefault(); enviar(); });
   $("sendBtn").addEventListener("click", enviar);
-  $("copyBtn").addEventListener("click", function () {
-    guardar();
-    var done = function () { $("copied").textContent = "Copiado. Mandámelo por donde te quede cómodo."; };
-    if (navigator.clipboard) navigator.clipboard.writeText(texto()).then(done, function () { $("copied").textContent = "No pude copiar; probá con WhatsApp."; });
-  });
 
   /* ---------- Tema ---------- */
   var themeBtn = $("themeBtn");

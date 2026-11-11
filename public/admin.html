@@ -116,7 +116,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
     </div>
     <div class="block">
       <h2 id="pCount">Presupuestos</h2>
-      <p class="muted">Los planes que arman los clientes en la calculadora, cuando tocan «Mandámelo» o «Copiar el plan».</p>
+      <p class="muted">Los planes que los clientes te mandan desde la calculadora (/presupuesto).</p>
       <div id="pList" class="list"></div>
     </div>
     <div class="block">
@@ -174,7 +174,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
       var pl = r.plan || {};
       return '<details><summary><strong>' + esc(r.cliente || "Sin nombre") + '</strong><span class="when">' + esc(fecha(r.creado)) + '</span>' +
         '<span class="what">' + esc(pesos(r.total)) + ' por mes' + (pl.paquete ? " · paquete " + esc(pl.paquete) : "") + '</span></summary>' +
-        '<div class="detail"><ul>' + (pl.items || []).map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + '</ul>' +
+        '<div class="detail">' + (pl.contacto ? '<p><strong>Contacto:</strong> ' + esc(pl.contacto) + '</p>' : "") + '<ul>' + (pl.items || []).map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + '</ul>' +
         (pl.dolar ? '<p class="muted">Calculado con dólar a ' + esc(pesos(pl.dolar)) + '.</p>' : "") +
         '<div class="row"><button class="btn small" type="button" data-pdel="' + esc(r.id) + '">Borrar este presupuesto</button></div></div></details>';
     }).join("");

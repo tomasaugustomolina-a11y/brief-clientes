@@ -1,4 +1,6 @@
 // API del brief: guarda respuestas (POST, público) y las lista o borra (GET/DELETE, con contraseña).
+import { avisarPorMail } from "./mail.js";
+
 const MAX_BODY = 64 * 1024;
 
 export const json = (data, status = 200) =>
@@ -30,7 +32,7 @@ export async function adminError(request, env) {
   return null;
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, ctx }) {
   if (Number(request.headers.get("content-length") || 0) > MAX_BODY) return json({ error: "too_large" }, 413);
   let body;
   try {
@@ -65,6 +67,11 @@ export async function onRequestPost({ request, env }) {
       (request.headers.get("user-agent") || "").slice(0, 300)
     )
     .run();
+  const aviso = avisarPorMail(env, {
+    asunto: `Nuevo brief: ${clean.nombre.trim()}`,
+    texto: `${clean.nombre.trim()} completó el brief${clean.rubro ? ` (${clean.rubro})` : ""}.\n\nLo ves completo en tu /admin.`,
+  });
+  if (ctx && ctx.waitUntil) ctx.waitUntil(aviso); else await aviso;
   return json({ ok: true, id });
 }
 

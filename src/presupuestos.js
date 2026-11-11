@@ -1,5 +1,6 @@
 // API de la calculadora: guarda cada plan que un cliente manda (POST, público) y los lista o borra (GET/DELETE, con contraseña).
 import { json, adminError } from "./respuestas.js";
+import { avisarPorMail } from "./mail.js";
 
 const MAX_BODY = 8 * 1024;
 
@@ -10,7 +11,7 @@ async function ensureTable(env) {
   ).run();
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost({ request, env, ctx }) {
   if (Number(request.headers.get("content-length") || 0) > MAX_BODY) return json({ error: "too_large" }, 413);
   let body;
   try {
@@ -20,10 +21,16 @@ export async function onRequestPost({ request, env }) {
   } catch {
     return json({ error: "bad_json" }, 400);
   }
+  if (body && body.hp) return json({ ok: true }); // trampa para bots
+  const nombre = String((body && body.nombre) || "").trim().slice(0, 80);
+  const contacto = String((body && body.contacto) || "").trim().slice(0, 120);
+  if (!nombre || !contacto) return json({ error: "missing_contact" }, 400);
   const items = Array.isArray(body && body.items) ? body.items.slice(0, 20).map((s) => String(s).slice(0, 120)) : [];
   if (!items.length) return json({ error: "missing_plan" }, 400);
   const total = Math.max(0, Math.min(1e10, Math.round(Number(body.total) || 0)));
   const plan = {
+    contacto,
+    link: String(body.cliente || "").slice(0, 80),
     items,
     paquete: String(body.paquete || "").slice(0, 40),
     dolar: Number(body.dolar) || null,
@@ -33,9 +40,25 @@ export async function onRequestPost({ request, env }) {
   await env.DB.prepare(
     "INSERT INTO presupuestos (id, creado, cliente, total, plan, user_agent) VALUES (?1, ?2, ?3, ?4, ?5, ?6)"
   )
-    .bind(id, new Date().toISOString(), String(body.cliente || "").slice(0, 80), total, JSON.stringify(plan),
+    .bind(id, new Date().toISOString(), nombre, total, JSON.stringify(plan),
       (request.headers.get("user-agent") || "").slice(0, 300))
     .run();
+
+  const pesos = "$" + new Intl.NumberFormat("es-AR").format(total);
+  const aviso = avisarPorMail(env, {
+    asunto: `Nuevo presupuesto: ${nombre} · ${pesos} por mes`,
+    texto: [
+      `${nombre} armó un plan en la calculadora.`,
+      "",
+      `Contacto: ${contacto}`,
+      `Total: ${pesos} por mes${plan.paquete ? ` (paquete ${plan.paquete})` : ""}`,
+      "",
+      ...items.map((i) => `• ${i}`),
+      "",
+      "Lo ves también en tu /admin.",
+    ].join("\n"),
+  });
+  if (ctx && ctx.waitUntil) ctx.waitUntil(aviso); else await aviso;
   return json({ ok: true, id });
 }
 
