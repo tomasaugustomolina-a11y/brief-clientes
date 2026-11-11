@@ -79,7 +79,8 @@ button { font: inherit; color: inherit; }
 }
 .theme svg { width: 18px; height: 18px; }
 .where { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
-.sec { font-weight: 700; font-size: 18px; line-height: 24px; height: 24px; overflow: hidden; }
+.sec { font-weight: 700; font-size: 18px; line-height: 24px; height: 24px; overflow: hidden; display: flex; justify-content: space-between; gap: 12px; }
+.sec .part { color: var(--muted); font-size: 16px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .sec span { display: block; }
 .bar { height: 4px; border-radius: 2px; background: var(--veil); overflow: hidden; }
 .bar i { display: block; height: 100%; width: 0; background: var(--electric); border-radius: 2px; transition: width .5s var(--ease); }
@@ -196,7 +197,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
     </button>
     <div class="where" id="where">
-      <div class="sec" aria-live="polite"><span id="secName">Bienvenida</span></div>
+      <div class="sec"><span id="secName" aria-live="polite">Bienvenida</span><span class="part" id="secPart"></span></div>
       <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
     </div>
   </header>
@@ -223,6 +224,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   var KEY = "brief-tomi-v1";
   var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   var $ = function (id) { return document.getElementById(id); };
+  var secPart = $("secPart");
   var stage = $("stage"), nextBtn = $("nextBtn"), backBtn = $("backBtn"), secName = $("secName"), barFill = $("barFill"), foot = $("foot"), where = $("where");
 
   // Cliente que viene en el link: ?c=lucia-fernandez
@@ -332,7 +334,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   function chrome() {
     var i = st.i;
     if (i === -1) {
-      secName.textContent = "Bienvenida"; barFill.style.width = "0%";
+      secName.textContent = "Bienvenida"; secPart.textContent = ""; barFill.style.width = "0%";
       backBtn.hidden = true; nextBtn.textContent = hadDraft ? "Seguir donde quedé" : "Empezar";
       nextBtn.setAttribute("aria-disabled", "false"); foot.hidden = false; where.style.visibility = "visible";
       return;
@@ -340,6 +342,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     if (i >= FLOW.length) { foot.hidden = true; where.style.visibility = "hidden"; return; }
     var q = FLOW[i];
     if (secName.textContent !== q.sec.nombre) swapSection(q.sec.nombre);
+    secPart.textContent = "Parte " + (q.si + 1) + " de " + B.secciones.length;
     barFill.style.width = ((q.qi + 1) / q.n * 100) + "%";
     backBtn.hidden = false; foot.hidden = false; where.style.visibility = "visible";
     refreshNext();
@@ -395,24 +398,10 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     }
     el.classList.add("reveal");
     var up = dir !== "back";
-    var opts = { duration: 680, easing: "cubic-bezier(.76,0,.24,1)" };
-    from.animate(sPath(0, up ? -1 : 1, true), opts);
-    el.animate(sPath(up ? 1 : -1, 0, false), opts).onfinish = finish;
-  }
-
-  // Recorrido en S: la pantalla sube (o baja) ondulando de un lado al otro, con una leve inclinación.
-  function sPath(fromY, toY, leaving) {
-    var frames = [], steps = 12, amp = 7;
-    for (var k = 0; k <= steps; k++) {
-      var p = k / steps;
-      var y = (fromY + (toY - fromY) * p) * 104;
-      var wave = Math.sin(p * Math.PI * 2) * (toY < fromY || (fromY === 0 && toY < 0) ? 1 : -1);
-      var x = wave * amp, r = wave * 2.2;
-      var f = { transform: "translate(" + x.toFixed(2) + "%, " + y.toFixed(2) + "%) rotate(" + r.toFixed(2) + "deg)" };
-      if (leaving) f.opacity = 1 - p * 0.85;
-      frames.push(f);
-    }
-    return frames;
+    // Recto en vertical; la velocidad sigue una curva en S: arranca suave, acelera y frena suave.
+    var opts = { duration: 700, easing: "cubic-bezier(.76,0,.24,1)" };
+    from.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(" + (up ? "-100%" : "100%") + ")", opacity: 0.15 }], opts);
+    el.animate([{ transform: "translateY(" + (up ? "100%" : "-100%") + ")" }, { transform: "translateY(0)" }], opts).onfinish = finish;
   }
 
   function showErr(msg) {
@@ -492,8 +481,15 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     else return;
     showErr(""); refreshNext(); save();
   });
-  stage.addEventListener("keydown", function (e) {
-    if (e.key === "Enter" && e.target.tagName === "INPUT") { e.preventDefault(); e.target.blur(); forward(); }
+  // Enter avanza desde cualquier lado (en un texto largo, Ctrl o Cmd + Enter). En una opción, Enter la elige.
+  document.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter" || e.isComposing || foot.hidden) return;
+    var t = e.target;
+    if (t.tagName === "TEXTAREA" && !(e.ctrlKey || e.metaKey)) return;
+    if (t.tagName === "BUTTON" || t.tagName === "A") return;
+    e.preventDefault();
+    if (t.tagName === "INPUT" && window.matchMedia("(pointer: coarse)").matches) t.blur();
+    forward();
   });
 
   // Deslizar: hacia arriba para seguir, hacia abajo para volver

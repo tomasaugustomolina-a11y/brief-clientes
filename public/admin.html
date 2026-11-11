@@ -34,7 +34,10 @@ button, input { font: inherit; color: inherit; }
   padding: max(20px, env(safe-area-inset-top, 0px)) max(20px, env(safe-area-inset-right, 0px)) 48px max(20px, env(safe-area-inset-left, 0px));
   display: flex; flex-direction: column; gap: 28px;
 }
-.top { display: flex; justify-content: space-between; align-items: center; }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.tools { gap: 12px; flex-wrap: nowrap; }
+.theme { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 2px solid var(--ink); background: transparent; display: grid; place-items: center; flex: none; }
+.theme svg { width: 18px; height: 18px; }
 .brand { font-family: var(--display); font-size: 26px; line-height: 1; }
 h1 { margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(40px, 11vw, 64px); line-height: 0.98; }
 h2 { margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: 26px; line-height: 1.05; }
@@ -49,7 +52,7 @@ p { margin: 0; }
 .btn.small { min-height: 40px; padding: 6px 14px; font-size: 16px; }
 .btn.blue { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.btn:focus-visible, .line:focus-visible, summary:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
+.btn:focus-visible, .line:focus-visible, summary:focus-visible, .theme:focus-visible, a:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
 .line {
   width: 100%; font-size: 22px; background: transparent; border: 0; border-bottom: 2px solid var(--ink);
   border-radius: 0; padding: 10px 2px; outline: none;
@@ -80,7 +83,15 @@ dd { margin: 0; overflow-wrap: anywhere; }
 </head>
 <body>
 <div class="wrap">
-  <div class="top"><div class="brand">Tomi</div><a class="muted" href="/">Ver formulario</a></div>
+  <div class="top"><div class="brand">Tomi</div>
+    <div class="row tools">
+      <a class="muted" href="/">Ver formulario</a>
+      <button type="button" class="theme" id="themeBtn" aria-label="Cambiar a modo oscuro">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+      </button>
+      <button type="button" class="btn small" id="logoutBtn" hidden>Salir</button>
+    </div>
+  </div>
 
   <section class="block" id="login">
     <h1>Respuestas</h1>
@@ -141,7 +152,7 @@ dd { margin: 0; overflow-wrap: anywhere; }
     return api("GET").then(function (d) {
       rows = d.respuestas || [];
       try { sessionStorage.setItem("brief-admin", pass); } catch (e) {}
-      $("login").hidden = true; $("panel").hidden = false;
+      $("login").hidden = true; $("panel").hidden = false; $("logoutBtn").hidden = false;
       render();
     });
   }
@@ -182,6 +193,32 @@ dd { margin: 0; overflow-wrap: anywhere; }
     });
   });
   if (pass) load().catch(function () { pass = ""; });
+
+  /* Salir: borra la contraseña guardada en esta pestaña */
+  $("logoutBtn").addEventListener("click", function () {
+    pass = ""; rows = [];
+    try { sessionStorage.removeItem("brief-admin"); } catch (e) {}
+    $("pass").value = ""; $("loginMsg").textContent = "";
+    $("panel").hidden = true; $("login").hidden = false; $("logoutBtn").hidden = true;
+    $("list").innerHTML = "";
+    $("pass").focus();
+  });
+
+  /* Tema, igual que en el formulario */
+  var themeBtn = $("themeBtn");
+  function isDark() {
+    var t = document.documentElement.getAttribute("data-theme");
+    if (t) return t === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function syncTheme() { themeBtn.setAttribute("aria-label", isDark() ? "Cambiar a modo claro" : "Cambiar a modo oscuro"); }
+  themeBtn.addEventListener("click", function () {
+    var next = isDark() ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("tema", next); } catch (e) {}
+    syncTheme();
+  });
+  syncTheme();
 
   /* Link por cliente */
   function slug(s) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 50); }
