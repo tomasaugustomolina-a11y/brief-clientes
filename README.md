@@ -9,6 +9,6 @@ Formulario móvil, pregunta a pregunta, para conocer a cada cliente antes de arm
 
 ## Publicación
 
-Cloudflare Workers conectado a este repositorio: cada push a `main` se publica solo (`npx wrangler deploy`). La base y la contraseña de `/admin` se configuran en `wrangler.toml`.
+Cloudflare Workers conectado a este repositorio: cada push a `main` se publica solo (`npx wrangler deploy`). La base se configura en `wrangler.toml`.
 
-Para cambiar la contraseña de `/admin`: calcular el SHA-256 de la nueva (`printf '%s' 'nueva' | shasum -a 256`) y reemplazar `ADMIN_HASH` en `wrangler.toml`.
+La contraseña de `/admin` es el secreto `ADMIN_PASSWORD` del Worker (Cloudflare > Workers & Pages > brief-clientes > Settings > Variables and Secrets). Para cambiarla se edita ahí; no va en el repositorio.

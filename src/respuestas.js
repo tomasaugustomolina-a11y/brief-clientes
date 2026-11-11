@@ -19,11 +19,12 @@ function sameText(a, b) {
   return r === 0;
 }
 
+// La contraseña de /admin vive como secreto ADMIN_PASSWORD en Cloudflare, nunca en el repositorio.
 async function isAdmin(request, env) {
   const h = request.headers.get("authorization") || "";
   const pass = h.startsWith("Bearer ") ? h.slice(7) : "";
-  if (!pass || !env.ADMIN_HASH) return false;
-  return sameText(await sha256Hex(pass), String(env.ADMIN_HASH).toLowerCase());
+  if (!pass || !env.ADMIN_PASSWORD) return false;
+  return sameText(await sha256Hex(pass), await sha256Hex(String(env.ADMIN_PASSWORD)));
 }
 
 export async function onRequestPost({ request, env }) {

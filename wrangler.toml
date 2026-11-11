@@ -6,9 +6,8 @@ compatibility_date = "2025-09-01"
 directory = "./public"
 binding = "ASSETS"
 
-[vars]
-# SHA-256 de la contraseña de /admin. Para cambiarla, generá el hash nuevo y reemplazalo acá.
-ADMIN_HASH = "ae09ab60023b2f47f05b676cad43cbd92f6e35212755d9fb40e46d2cb88af4dd"
+# La contraseña de /admin se carga en Cloudflare como secreto ADMIN_PASSWORD
+# (Settings > Variables and Secrets), no en este archivo.
 
 [[d1_databases]]
 binding = "DB"
