@@ -182,8 +182,8 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     <h2 id="h-packs">Empezá por un paquete</h2>
     <p class="sub">O armalo a tu medida más abajo.</p>
     <div class="packs">
-      <button type="button" class="pack" data-pack="esencial" aria-pressed="false"><b>Esencial</b><span>Para arrancar con constancia</span></button>
-      <button type="button" class="pack" data-pack="completo" aria-pressed="false"><b>Completo</b><span>Marca, contenido y web</span></button>
+      <button type="button" class="pack" data-pack="esencial" aria-pressed="false"><b>Esencial</b><span>Crecimiento lento y constante</span></button>
+      <button type="button" class="pack" data-pack="acelerado" aria-pressed="false"><b>Acelerado</b><span>Un reel y una historia por día</span></button>
     </div>
   </section>
 
@@ -239,7 +239,8 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   /* ---------- Precios internos en USD (el cliente solo ve el total en pesos) ---------- */
   var PRECIOS = {
     reelSolo: 25,   // si pide un solo reel en el mes
-    reel: 15,       // cada reel cuando pide 2 o más
+    reel: 15,       // cada reel cuando pide de 2 a 6
+    reelVolumen: 10, // cada reel del 7 en adelante
     carrusel: 15,   // carrusel o post
     historia: 2     // historia (foto)
   };
@@ -252,10 +253,10 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   var DOLAR = 1570;       // dólar por defecto; se cambia con ?dolar=1600 en el link
   var PAQUETES = {
     esencial: { reel: 4, carrusel: 4, historia: 20, extras: [] },
-    completo: { reel: 4, carrusel: 8, historia: 28, extras: ["manual", "landing"] }
+    acelerado: { reel: 30, carrusel: 12, historia: 30, extras: [] }
   };
   var CONTENIDO = [
-    { id: "reel", nombre: "Reels", max: 16, una: "reel", varias: "reels" },
+    { id: "reel", nombre: "Reels", max: 31, una: "reel", varias: "reels" },
     { id: "carrusel", nombre: "Carruseles o posts", max: 20, una: "carrusel", varias: "carruseles" },
     { id: "historia", nombre: "Historias", max: 60, una: "historia", varias: "historias" }
   ];
@@ -273,7 +274,11 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   if (nombre) { $("title").textContent = nombre + ", armá tu plan"; document.title = "Plan de " + nombre + " | Tomi"; }
 
   /* ---------- Cálculo ---------- */
-  function precioReels(n) { return n === 1 ? PRECIOS.reelSolo : n * PRECIOS.reel; }
+  function precioReels(n) {
+    if (n === 1) return PRECIOS.reelSolo;
+    // Del 1 al 6 a precio normal; del 7 en adelante, más baratos (así pedir uno más nunca sale menos).
+    return Math.min(n, 6) * PRECIOS.reel + Math.max(0, n - 6) * PRECIOS.reelVolumen;
+  }
   function bruto(s) {
     var usd = precioReels(s.reel) + s.carrusel * PRECIOS.carrusel + s.historia * PRECIOS.historia;
     EXTRAS.forEach(function (e) { if (s.extras[e.id]) usd += e.usd / MESES_EXTRAS; });
@@ -307,7 +312,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   function bestFor(budgetArs) {
     var best = null;
     var hist = [0, 12, 20, 28, 40, 60], nExtras = 1 << EXTRAS.length;
-    for (var r = 0; r <= 16; r++) for (var c = 0; c <= 20; c++) for (var h = 0; h < hist.length; h++) for (var m = 0; m < nExtras; m++) {
+    for (var r = 0; r <= 31; r++) for (var c = 0; c <= 20; c++) for (var h = 0; h < hist.length; h++) for (var m = 0; m < nExtras; m++) {
       if (r + c === 0) continue;
       var ex = {}; EXTRAS.forEach(function (e, i) { if (m & (1 << i)) ex[e.id] = true; });
       var s = { reel: r, carrusel: c, historia: hist[h], extras: ex };
