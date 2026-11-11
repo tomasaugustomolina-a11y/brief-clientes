@@ -7,7 +7,7 @@ window.BRIEF = {
       id: "vos", nombre: "Sobre vos",
       preguntas: [
         { id: "nombre", type: "text", req: true, q: "¿Cómo te llamás?", ph: "Nombre y apellido", auto: "name" },
-        { id: "contacto", type: "text", req: true, q: "¿Por dónde te escribimos?", ph: "WhatsApp o mail", auto: "tel" },
+        { id: "contacto", type: "text", req: true, q: "¿Por dónde te escribimos?", note: "Escribí tu número de teléfono o tu mail.", ph: "WhatsApp o mail", auto: "tel" },
         { id: "rubro", type: "one", req: true, q: "¿A qué te dedicás?",
           o: ["Arquitectura o interiorismo", "Diseño", "Fotografía o video", "Salud y bienestar", "Psicología o terapia", "Estética y belleza", "Abogacía o contabilidad", "Inmobiliaria", "Coaching o consultoría", "Educación", "Gastronomía", "Arte o música"] },
         { id: "vender", type: "many", req: true, q: "¿Qué te gustaría vender más?",
