@@ -429,12 +429,24 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     t += "Total: " + money(total(st)) + " por mes.";
     return t;
   }
+  // Guarda el plan en el panel de Tomi (/admin) y abre WhatsApp con el detalle.
+  function guardar() {
+    var pk = samePack(st);
+    try {
+      fetch("/api/presupuestos", {
+        method: "POST", keepalive: true, headers: { "content-type": "application/json" },
+        body: JSON.stringify({ cliente: cliente, items: items(), total: total(st), paquete: pk, dolar: DOLAR })
+      }).catch(function () {});
+    } catch (e) {}
+  }
   function enviar() {
+    guardar();
     window.open("https://wa.me/" + WHATSAPP + "?text=" + encodeURIComponent(texto()), "_blank", "noopener");
   }
   $("waBtn").addEventListener("click", enviar);
   $("sendBtn").addEventListener("click", enviar);
   $("copyBtn").addEventListener("click", function () {
+    guardar();
     var done = function () { $("copied").textContent = "Copiado. Mandámelo por donde te quede cómodo."; };
     if (navigator.clipboard) navigator.clipboard.writeText(texto()).then(done, function () { $("copied").textContent = "No pude copiar; probá con WhatsApp."; });
   });

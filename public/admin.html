@@ -115,6 +115,11 @@ dd { margin: 0; overflow-wrap: anywhere; }
       <div id="list" class="list"></div>
     </div>
     <div class="block">
+      <h2 id="pCount">Presupuestos</h2>
+      <p class="muted">Los planes que arman los clientes en la calculadora, cuando tocan «Mandámelo» o «Copiar el plan».</p>
+      <div id="pList" class="list"></div>
+    </div>
+    <div class="block">
       <h2>Link para un cliente</h2>
       <p class="muted">Escribí el nombre como querés que aparezca, con tildes y mayúsculas, y mandale este link. El formulario lo saluda por su nombre y la respuesta queda marcada con él.</p>
       <input class="line" id="clientName" type="text" placeholder="Nombre del cliente" aria-label="Nombre del cliente">
@@ -152,8 +157,39 @@ dd { margin: 0; overflow-wrap: anywhere; }
       });
   }
 
+  var planes = [];
+  function apiP(method, qs) {
+    return fetch("/api/presupuestos" + (qs || ""), { method: method, headers: { authorization: "Bearer " + pass } })
+      .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); });
+  }
+  function pesos(n) { return "$" + new Intl.NumberFormat("es-AR").format(n || 0); }
+  function loadPlanes() {
+    return apiP("GET").then(function (d) { planes = d.presupuestos || []; renderPlanes(); })
+      .catch(function () { $("pList").innerHTML = '<p class="muted">No se pudieron cargar los presupuestos.</p>'; });
+  }
+  function renderPlanes() {
+    $("pCount").textContent = planes.length === 1 ? "1 presupuesto" : planes.length + " presupuestos";
+    if (!planes.length) { $("pList").innerHTML = '<div class="empty"><p class="muted">Todavía nadie mandó un plan desde la calculadora.</p></div>'; return; }
+    $("pList").innerHTML = planes.map(function (r) {
+      var pl = r.plan || {};
+      return '<details><summary><strong>' + esc(r.cliente || "Sin nombre") + '</strong><span class="when">' + esc(fecha(r.creado)) + '</span>' +
+        '<span class="what">' + esc(pesos(r.total)) + ' por mes' + (pl.paquete ? " · paquete " + esc(pl.paquete) : "") + '</span></summary>' +
+        '<div class="detail"><ul>' + (pl.items || []).map(function (i) { return "<li>" + esc(i) + "</li>"; }).join("") + '</ul>' +
+        (pl.dolar ? '<p class="muted">Calculado con dólar a ' + esc(pesos(pl.dolar)) + '.</p>' : "") +
+        '<div class="row"><button class="btn small" type="button" data-pdel="' + esc(r.id) + '">Borrar este presupuesto</button></div></div></details>';
+    }).join("");
+  }
+  $("pList").addEventListener("click", function (e) {
+    var b = e.target.closest("[data-pdel]"); if (!b) return;
+    if (b.getAttribute("data-sure") !== "1") { b.setAttribute("data-sure", "1"); b.textContent = "Tocá de nuevo para borrar"; return; }
+    var id = b.getAttribute("data-pdel"); b.disabled = true;
+    apiP("DELETE", "?id=" + encodeURIComponent(id)).then(function () { planes = planes.filter(function (r) { return r.id !== id; }); renderPlanes(); })
+      .catch(function () { b.disabled = false; $("panelMsg").textContent = "No se pudo borrar. Probá de nuevo."; });
+  });
+
   function load() {
     return api("GET").then(function (d) {
+      loadPlanes();
       rows = d.respuestas || [];
       try { sessionStorage.setItem("brief-admin", pass); } catch (e) {}
       $("login").hidden = true; $("panel").hidden = false; $("logoutBtn").hidden = false;

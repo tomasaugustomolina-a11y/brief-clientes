@@ -1,7 +1,7 @@
 // API del brief: guarda respuestas (POST, público) y las lista o borra (GET/DELETE, con contraseña).
 const MAX_BODY = 64 * 1024;
 
-const json = (data, status = 200) =>
+export const json = (data, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
     headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
@@ -21,7 +21,7 @@ function sameText(a, b) {
 
 // La contraseña de /admin vive como secreto ADMIN_PASSWORD en Cloudflare, nunca en el repositorio.
 // Devuelve null si está bien, o la respuesta de error a mandar.
-async function adminError(request, env) {
+export async function adminError(request, env) {
   const secret = String(env.ADMIN_PASSWORD || "").trim();
   if (!secret) return json({ error: "no_password_set" }, 503);
   const h = request.headers.get("authorization") || "";
