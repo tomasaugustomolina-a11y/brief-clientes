@@ -76,7 +76,7 @@ button { font: inherit; color: inherit; }
 }
 .theme svg { width: 18px; height: 18px; }
 .where { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
-.sec { font-style: italic; font-size: 18px; line-height: 24px; height: 24px; overflow: hidden; }
+.sec { font-weight: 700; font-size: 18px; line-height: 24px; height: 24px; overflow: hidden; }
 .sec span { display: block; }
 .bar { height: 4px; border-radius: 2px; background: var(--veil); overflow: hidden; }
 .bar i { display: block; height: 100%; width: 0; background: var(--electric); border-radius: 2px; transition: width .5s var(--ease); }
@@ -95,8 +95,8 @@ button { font: inherit; color: inherit; }
 }
 .q:focus { outline: none; }
 .q .w { display: inline-block; }
-.hint { margin: -4px 0 0; font-style: italic; color: var(--muted); font-size: 17px; }
-.hint.shake { color: var(--ink); }
+.hint { margin: -4px 0 0; font-weight: 700; color: var(--ink); font-size: 18px; }
+.hint.shake { color: var(--electric); }
 .lead { margin: 0; font-size: 20px; max-width: 34ch; }
 
 .opts { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
@@ -135,7 +135,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   width: 56px; height: 56px; flex: none; border-radius: 50%; cursor: pointer;
   background: transparent; border: 2px solid var(--ink); display: grid; place-items: center;
 }
-.back svg { width: 20px; height: 20px; }
+.back svg { width: 22px; height: 22px; }
 .next {
   flex: 1; height: 56px; border-radius: 999px; cursor: pointer; border: 0;
   background: var(--ink); color: var(--paper);
@@ -183,7 +183,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   <main class="stage" id="stage"></main>
   <footer class="foot" id="foot">
     <button type="button" class="back" id="backBtn" aria-label="Pregunta anterior" hidden>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 20v-8a4 4 0 0 0-4-4H5M9.5 3.5L5 8l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
     <button type="button" class="next" id="nextBtn">Empezar</button>
   </footer>
@@ -374,9 +374,24 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     }
     el.classList.add("reveal");
     var up = dir !== "back";
-    var opts = { duration: 560, easing: "cubic-bezier(.22,.8,.2,1)" };
-    from.animate([{ transform: "translateY(0)", opacity: 1 }, { transform: "translateY(" + (up ? "-100%" : "100%") + ")", opacity: 0.2 }], opts);
-    el.animate([{ transform: "translateY(" + (up ? "100%" : "-100%") + ")" }, { transform: "translateY(0)" }], opts).onfinish = finish;
+    var opts = { duration: 680, easing: "cubic-bezier(.76,0,.24,1)" };
+    from.animate(sPath(0, up ? -1 : 1, true), opts);
+    el.animate(sPath(up ? 1 : -1, 0, false), opts).onfinish = finish;
+  }
+
+  // Recorrido en S: la pantalla sube (o baja) ondulando de un lado al otro, con una leve inclinación.
+  function sPath(fromY, toY, leaving) {
+    var frames = [], steps = 12, amp = 7;
+    for (var k = 0; k <= steps; k++) {
+      var p = k / steps;
+      var y = (fromY + (toY - fromY) * p) * 104;
+      var wave = Math.sin(p * Math.PI * 2) * (toY < fromY || (fromY === 0 && toY < 0) ? 1 : -1);
+      var x = wave * amp, r = wave * 2.2;
+      var f = { transform: "translate(" + x.toFixed(2) + "%, " + y.toFixed(2) + "%) rotate(" + r.toFixed(2) + "deg)" };
+      if (leaving) f.opacity = 1 - p * 0.85;
+      frames.push(f);
+    }
+    return frames;
   }
 
   function showErr(msg) {
