@@ -7,6 +7,7 @@ const MIN = 60 * 1000;
 const LIMITES = {
   login: { max: 8, ventana: 15 * MIN }, // contraseñas equivocadas en /admin
   envio: { max: 6, ventana: 10 * MIN }, // respuestas enviadas
+  chequeo: { max: 40, ventana: 10 * MIN }, // mails revisados antes de seguir
 };
 
 const json = (data, status = 200, extra = {}) =>
@@ -72,6 +73,77 @@ async function anotar(env, tipo, clave) {
   } catch (err) {
     console.error("tope: no se pudo anotar", err);
   }
+}
+
+/* ---------- Contacto: mail o teléfono reales ---------- */
+// Mail: algo@dominio.algo, sin espacios. Teléfono: entre 8 y 15 números (con +, espacios, guiones o paréntesis).
+const RE_MAIL = /^[^\s@<>()\[\]",;:]{1,64}@((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24})$/i;
+const RE_TEL = /^\+?[\d\s().-]{8,24}$/;
+export function leerContacto(texto) {
+  const t = String(texto || "").trim();
+  if (t.includes("@")) {
+    const m = t.length <= 254 && t.match(RE_MAIL);
+    return m ? { tipo: "mail", ok: true, dominio: m[1].toLowerCase() } : { tipo: "mail", ok: false };
+  }
+  const digitos = t.replace(/\D/g, "").length;
+  return { tipo: "tel", ok: RE_TEL.test(t) && digitos >= 8 && digitos <= 15 };
+}
+
+// ¿El dominio del mail puede recibir correo? Pregunta al DNS de Cloudflare.
+// true / false; null si no se pudo saber (en ese caso se deja pasar).
+const cacheDominios = new Map();
+async function dns(env, nombre, tipo) {
+  const base = env.DOH_URL || "https://cloudflare-dns.com/dns-query";
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 2500);
+  try {
+    const r = await fetch(base + "?name=" + encodeURIComponent(nombre) + "&type=" + tipo, {
+      headers: { accept: "application/dns-json" },
+      signal: ctl.signal,
+    });
+    if (!r.ok) return null;
+    return await r.json();
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+export async function dominioRecibeMail(env, dominio) {
+  if (cacheDominios.has(dominio)) return cacheDominios.get(dominio);
+  let res = null;
+  const mx = await dns(env, dominio, "MX");
+  if (mx && mx.Status === 3) res = false; // el dominio no existe
+  else if (mx && mx.Status === 0) {
+    const regs = (mx.Answer || []).filter((a) => a.type === 15);
+    if (regs.length) res = !regs.every((a) => String(a.data).trim() === "0 ."); // "0 ." = el dominio avisa que no recibe mail
+    else {
+      const a = await dns(env, dominio, "A"); // sin MX, el correo va a la dirección del dominio
+      res = a && a.Status === 0 ? (a.Answer || []).some((x) => x.type === 1) : a && a.Status === 3 ? false : null;
+    }
+  }
+  if (res !== null) {
+    if (cacheDominios.size > 500) cacheDominios.clear();
+    cacheDominios.set(dominio, res);
+  }
+  return res;
+}
+// Devuelve "" si el contacto sirve, o el motivo: "formato" o "dominio".
+async function problemaContacto(env, texto) {
+  const c = leerContacto(texto);
+  if (!c.ok) return "formato";
+  if (c.tipo === "mail" && (await dominioRecibeMail(env, c.dominio)) === false) return "dominio";
+  return "";
+}
+
+// GET /api/contacto?v=... : el formulario pregunta si el mail o teléfono sirve antes de seguir.
+export async function onRequestContacto({ request, env }) {
+  const v = (new URL(request.url).searchParams.get("v") || "").slice(0, 254);
+  const clave = await huella(request, env);
+  if (await excedido(env, "chequeo", clave)) return json({ ok: true, sinRevisar: true }); // no trabar al cliente
+  await anotar(env, "chequeo", clave);
+  const p = await problemaContacto(env, v);
+  return json(p ? { ok: false, error: p } : { ok: true });
 }
 
 // La contraseña de /admin vive como secreto ADMIN_PASSWORD en Cloudflare, nunca en el repositorio.
@@ -140,6 +212,8 @@ export async function onRequestPost({ request, env }) {
     if (/^[a-z_]{1,40}$/.test(k) && k !== "__proto__") clean[k] = String(v ?? "").slice(0, 3000);
   }
   if (!clean.nombre || !clean.nombre.trim()) return json({ error: "missing_name" }, 400);
+  const pc = await problemaContacto(env, clean.contacto);
+  if (pc) return json({ error: "bad_contact", motivo: pc }, 400);
 
   const clave = await huella(request, env);
   if (await excedido(env, "envio", clave)) return json({ error: "too_many" }, 429, { "retry-after": "600" });

@@ -80,8 +80,41 @@
     if (a.sel.indexOf(OTRO) !== -1) parts.push(a.otro.trim() ? "Otro: " + a.otro.trim() : "Otro");
     return parts.join("; ");
   }
+  /* ---------- Contacto: mail o teléfono reales ---------- */
+  var RE_MAIL = /^[^\s@<>()\[\]",;:]{1,64}@((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24})$/i;
+  var RE_TEL = /^\+?[\d\s().-]{8,24}$/;
+  var COMUNES = ["gmail.com", "hotmail.com", "hotmail.com.ar", "outlook.com", "outlook.com.ar", "yahoo.com", "yahoo.com.ar", "live.com", "live.com.ar", "icloud.com", "me.com", "protonmail.com", "proton.me"];
+  var revisados = {}, aceptados = {};
+  function formatoContacto(t) {
+    t = t.trim();
+    if (t.indexOf("@") !== -1) {
+      if (t.length > 254 || !RE_MAIL.test(t)) return "Revisá el mail: tiene que ser tipo nombre@gmail.com, sin espacios.";
+      return "";
+    }
+    var dig = t.replace(/\D/g, "").length;
+    if (!RE_TEL.test(t) || dig < 8 || dig > 15) return "Escribí un teléfono con código de área (por ejemplo 11 5555 5555) o un mail.";
+    return "";
+  }
+  function distancia(a, b) {
+    var d = [], i, j;
+    for (i = 0; i <= a.length; i++) { d[i] = [i]; }
+    for (j = 1; j <= b.length; j++) d[0][j] = j;
+    for (i = 1; i <= a.length; i++) for (j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[a.length][b.length];
+  }
+  // "lucia@gmial.com" → "lucia@gmail.com"
+  function sugerencia(t) {
+    var m = t.trim().toLowerCase().match(/^(.+)@(.+)$/);
+    if (!m || COMUNES.indexOf(m[2]) !== -1) return "";
+    var mejor = "", dmin = 3;
+    COMUNES.forEach(function (c) { var d = distancia(m[2], c); if (d < dmin) { dmin = d; mejor = c; } });
+    return mejor ? t.trim().replace(/@.+$/, "@" + mejor) : "";
+  }
+
   function problem(q) {
     var a = A(q.id);
+    if (q.id === "contacto" && a.text.trim()) return formatoContacto(a.text);
     if (q.type === "text" || q.type === "long") return q.req && !a.text.trim() ? "Completá este dato para seguir." : "";
     if (a.sel.indexOf(OTRO) !== -1 && !a.otro.trim()) return "Escribí qué es «Otro» o desmarcalo.";
     if (q.req && !a.sel.length) return q.type === "one" ? "Elegí una opción para seguir." : "Elegí al menos una opción para seguir.";
@@ -262,11 +295,55 @@
     if (st.i === -1) { go(hadDraft ? resumeAt : 0, "up"); return; }
     var q = FLOW[st.i], p = problem(q);
     if (p) { showErr(p); return; }
+    if (q.id === "contacto" && !revisarContacto(A(q.id).text.trim())) return;
     var n = nextIndex(st.i);
     if (n < FLOW.length) { go(n, "up"); return; }
     send();
   }
   function backward() { if (busy || st.i <= -1) return; go(prevIndex(st.i), "back"); }
+
+  // Antes de dejar pasar un mail: sugiere si parece mal escrito y pregunta si el dominio existe.
+  // Devuelve true si se puede seguir ya; si no, muestra el aviso o sigue solo cuando llega la respuesta.
+  function revisarContacto(t) {
+    if (t.indexOf("@") === -1 || aceptados[t]) return true;
+    var sug = sugerencia(t);
+    if (sug && !revisados["sug:" + t]) {
+      revisados["sug:" + t] = true;
+      showFix("¿Quisiste decir " + sug + "? Si está bien como lo escribiste, tocá «Siguiente» de nuevo.", sug);
+      return false;
+    }
+    if (revisados[t] === "malo") { showErr("No encuentro el dominio de ese mail. Revisá que esté bien escrito."); return false; }
+    if (nextBtn.classList.contains("busy")) return false;
+    var at = st.i;
+    nextBtn.classList.add("busy"); nextBtn.textContent = "Revisando…";
+    var fin = function (ok) {
+      nextBtn.classList.remove("busy"); refreshNext();
+      if (st.i !== at) return;
+      if (ok) { aceptados[t] = true; forward(); }
+      else { revisados[t] = "malo"; showErr("No encuentro el dominio de ese mail. Revisá que esté bien escrito."); }
+    };
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 4000);
+    fetch("/api/contacto?v=" + encodeURIComponent(t), ctl ? { signal: ctl.signal } : {})
+      .then(function (r) { return r.ok ? r.json() : { ok: true }; })
+      .then(function (d) { clearTimeout(timer); fin(!(d && d.ok === false && d.error === "dominio")); })
+      .catch(function () { clearTimeout(timer); fin(true); }); // sin conexión con el chequeo, no se traba a nadie
+    return false;
+  }
+  function showFix(msg, valor) {
+    showErr(msg);
+    var e = current && current.querySelector("#err");
+    if (!e) return;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "fix"; b.textContent = "Usar " + valor;
+    b.addEventListener("click", function () {
+      var inp = current.querySelector("#in-contacto");
+      A("contacto").text = valor; if (inp) inp.value = valor;
+      save(); showErr(""); refreshNext(); forward();
+    });
+    e.appendChild(document.createElement("br")); e.appendChild(b);
+    fitStage();
+  }
 
   function send() {
     if (nextBtn.classList.contains("busy")) return;
@@ -279,12 +356,20 @@
       body: JSON.stringify({ cliente: st.cliente || "", respuestas: respuestas, hp: $("hp").value })
     }).then(function (r) {
       if (r.status === 429) throw new Error("wait");
+      if (r.status === 400) return r.json().then(function (d) { throw new Error(d && d.error === "bad_contact" ? "contacto" : "http 400"); });
       if (!r.ok) throw new Error("http " + r.status);
       try { localStorage.removeItem(KEY); } catch (e) {}
       nextBtn.classList.remove("busy");
       go(FLOW.length, "up");
     }).catch(function (err) {
       nextBtn.classList.remove("busy"); refreshNext();
+      if (err && err.message === "contacto") { // volver a la pregunta del contacto y avisar ahí
+        var ic = -1; FLOW.forEach(function (q, k) { if (q.id === "contacto") ic = k; });
+        aceptados = {}; revisados[A("contacto").text.trim()] = "malo";
+        go(ic, "back");
+        setTimeout(function () { showErr("Revisá el mail o teléfono: no parece válido."); }, 760);
+        return;
+      }
       showErr(err && err.message === "wait"
         ? "Llegaron muchos envíos seguidos desde tu conexión. Esperá unos minutos y tocá «Enviar respuestas» de nuevo."
         : "No se pudieron enviar las respuestas. Revisá tu conexión y tocá «Enviar respuestas» de nuevo.");

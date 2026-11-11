@@ -15,8 +15,13 @@ La contraseña de `/admin` es el secreto `ADMIN_PASSWORD` del Worker (Cloudflare
 
 ## Seguridad
 
+Para probar el chequeo de mails en local sin internet, `DOH_URL` en `.dev.vars` puede apuntar a otro servidor DNS en formato JSON.
+
+
 - La contraseña de `/admin` nunca va en el repositorio. Después de 8 contraseñas equivocadas desde una misma conexión, la API pide esperar 15 minutos.
 - Cada conexión puede mandar hasta 6 respuestas cada 10 minutos.
+- El contacto tiene que ser un mail con formato válido y dominio que reciba correo (se consulta el DNS de Cloudflare), o un teléfono de 8 a 15 números. Si el mail parece mal escrito (gmial.com), el formulario sugiere la corrección.
+- Todo lo que se escribe se guarda con consultas preparadas (nunca se arma SQL con texto del cliente) y se muestra escapado, así que no se puede colar código.
 - De cada conexión se guarda solo una huella (no la IP), en la tabla `intentos`, y se borra al día.
 - Las páginas no usan scripts en línea ni de otros sitios (`public/_headers` lo exige con Content-Security-Policy). Si se agrega JavaScript, va en un archivo de `public/`.
 - El Excel se arma con SheetJS 0.18.5, copiado en `public/vendor/`.
