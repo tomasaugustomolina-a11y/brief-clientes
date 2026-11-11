@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#FFFFFF">
 <title>Brief de marca personal | Tomi</title>
@@ -49,7 +49,8 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
+html, body { height: 100%; margin: 0; overflow: hidden; }
+html { touch-action: manipulation; -webkit-text-size-adjust: 100%; }
 body {
   background: var(--paper); color: var(--ink);
   font-family: var(--text); font-size: 19px; line-height: 1.45;
@@ -61,7 +62,9 @@ button { font: inherit; color: inherit; }
 [hidden] { display: none !important; }
 
 .app {
-  height: 100vh; height: 100dvh;
+  /* El alto sigue al área visible: con el teclado abierto, "Siguiente" queda arriba del teclado. */
+  height: 100vh; height: var(--app-h, 100dvh);
+  transform: translateY(var(--app-top, 0px));
   max-width: 640px; margin: 0 auto;
   display: grid; grid-template-rows: auto 1fr auto;
   padding-top: env(safe-area-inset-top, 0px);
@@ -71,7 +74,7 @@ button { font: inherit; color: inherit; }
 .top { padding: 14px var(--gutter-r) 0 var(--gutter-l); display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 12px; }
 .brand { font-family: var(--display); font-size: 26px; line-height: 1; letter-spacing: 0.01em; }
 .theme {
-  width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
   border: 2px solid var(--ink); background: transparent; display: grid; place-items: center;
 }
 .theme svg { width: 18px; height: 18px; }
@@ -83,6 +86,11 @@ button { font: inherit; color: inherit; }
 
 /* La pantalla de cada pregunta */
 .stage { position: relative; overflow: hidden; }
+.stage::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 44px; pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--paper)); opacity: 0; transition: opacity .25s;
+}
+.stage.more::after { opacity: 1; }
 .card {
   position: absolute; inset: 0; overflow-y: auto; overscroll-behavior: contain;
   padding: 28px var(--gutter-r) 28px var(--gutter-l);
@@ -125,6 +133,18 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
 .line::placeholder { color: var(--muted); opacity: 1; }
 .line:focus { border-bottom-color: var(--electric); }
 .err { margin: 0; font-size: 17px; font-weight: 700; color: var(--electric); }
+
+@media (max-height: 700px) {
+  .opts { gap: 8px; }
+  .opt { padding: 10px 14px; min-height: 46px; font-size: 18px; }
+  .card { gap: 14px; padding-top: 20px; }
+}
+/* Teclado abierto: se esconde la firma para dejar lugar a la pregunta, el campo y el botón. */
+.app.tight .brand, .app.tight .theme { display: none; }
+.app.tight .top { padding-top: 8px; }
+.app.tight .card { padding-top: 14px; padding-bottom: 14px; gap: 12px; }
+.app.tight .q { font-size: clamp(28px, 8vw, 40px); }
+.app.tight .foot { padding-bottom: 10px; }
 
 /* Abajo: volver y seguir */
 .foot {
@@ -284,7 +304,8 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   function cardQuestion(q) {
     var a = A(q.id), body = "", hint = hintText(q);
     if (q.type === "text") {
-      body = '<input class="line" id="in-' + q.id + '" type="text" enterkeyhint="next" autocomplete="' + (q.auto || "off") + '" value="' + esc(a.text) + '" placeholder="' + esc(q.ph || "") + '" aria-labelledby="qh">';
+      var extra = q.id === "nombre" ? ' autocapitalize="words"' : (q.id === "contacto" || q.id === "usuario" ? ' autocapitalize="off" autocorrect="off" spellcheck="false"' : "");
+      body = '<input class="line" id="in-' + q.id + '" type="text" enterkeyhint="next"' + extra + ' autocomplete="' + (q.auto || "off") + '" value="' + esc(a.text) + '" placeholder="' + esc(q.ph || "") + '" aria-labelledby="qh">';
     } else if (q.type === "long") {
       body = '<textarea class="line" id="in-' + q.id + '" placeholder="' + esc(q.ph || "") + '" aria-labelledby="qh">' + esc(a.text) + "</textarea>";
     } else {
@@ -495,7 +516,36 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
     } else if (dy < 0 && atTop && st.i >= 0 && st.i < FLOW.length) backward();
   }, { passive: true });
 
+  /* Teclado del celu: la app ocupa solo lo visible y el campo queda centrado. */
+  var app = document.querySelector(".app"), vv = window.visualViewport, fullH = 0, lastW = 0;
+  function fitViewport() {
+    if (!vv) return;
+    if (vv.width !== lastW) { lastW = vv.width; fullH = 0; } // al girar el celu se mide de nuevo
+    fullH = Math.max(fullH, vv.height);
+    var r = document.documentElement.style;
+    r.setProperty("--app-h", Math.round(vv.height) + "px");
+    r.setProperty("--app-top", Math.round(vv.offsetTop) + "px");
+    app.classList.toggle("tight", vv.height < 560 && fullH - vv.height > 120);
+    checkMore();
+  }
+  if (vv) { vv.addEventListener("resize", fitViewport); vv.addEventListener("scroll", fitViewport); }
+  stage.addEventListener("focusin", function (e) {
+    if (!e.target.matches(".line")) return;
+    setTimeout(function () { try { e.target.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" }); } catch (err) {} }, 320);
+  });
+
+  /* Degradé abajo cuando la lista sigue más allá de lo visible. */
+  function checkMore() {
+    var c = current;
+    stage.classList.toggle("more", !!c && c.scrollHeight - c.clientHeight - c.scrollTop > 8);
+  }
+  stage.addEventListener("scroll", checkMore, true);
+  window.addEventListener("resize", checkMore);
+  var mo = new MutationObserver(function () { setTimeout(checkMore, 30); });
+  mo.observe(stage, { childList: true });
+
   go(-1);
+  fitViewport();
 })();
 </script>
 </body>

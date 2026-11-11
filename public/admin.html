@@ -58,6 +58,8 @@ p { margin: 0; }
 .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .msg { font-weight: 700; color: var(--electric); }
 .block { display: flex; flex-direction: column; gap: 14px; }
+#panel { gap: 44px; }
+#panel > h1 { margin-bottom: -16px; }
 .linkout { font-size: 17px; overflow-wrap: anywhere; padding: 12px 14px; border: 2px dashed var(--ink); border-radius: 14px; }
 .list { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
 details { border-bottom: 2px solid var(--ink); }
@@ -92,13 +94,6 @@ dd { margin: 0; overflow-wrap: anywhere; }
   <section class="block" id="panel" hidden>
     <h1>Respuestas</h1>
     <div class="block">
-      <h2>Link para un cliente</h2>
-      <p class="muted">Escribí el nombre y mandale este link. El formulario lo saluda por su nombre y la respuesta queda marcada con él.</p>
-      <input class="line" id="clientName" type="text" placeholder="Nombre del cliente" aria-label="Nombre del cliente">
-      <p class="linkout" id="clientLink"></p>
-      <div class="row"><button class="btn" type="button" id="copyLink">Copiar link</button><span class="msg" id="copyMsg"></span></div>
-    </div>
-    <div class="block">
       <div class="row" style="justify-content: space-between"><h2 id="count">Clientes</h2>
         <div class="row">
           <button class="btn small" type="button" id="dlXlsx">Descargar Excel</button>
@@ -107,6 +102,13 @@ dd { margin: 0; overflow-wrap: anywhere; }
       </div>
       <p class="msg" id="panelMsg" role="alert"></p>
       <div id="list" class="list"></div>
+    </div>
+    <div class="block">
+      <h2>Link para un cliente</h2>
+      <p class="muted">Escribí el nombre y mandale este link. El formulario lo saluda por su nombre y la respuesta queda marcada con él.</p>
+      <input class="line" id="clientName" type="text" placeholder="Nombre del cliente" aria-label="Nombre del cliente">
+      <p class="linkout" id="clientLink"></p>
+      <div class="row"><button class="btn" type="button" id="copyLink">Copiar link</button><span class="msg" id="copyMsg"></span></div>
     </div>
   </section>
 </div>
