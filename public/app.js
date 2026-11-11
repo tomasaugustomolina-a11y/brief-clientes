@@ -145,6 +145,12 @@
       }).join("") + "</span>";
     }).join(" ");
   }
+  // Firma: el wordmark «~Tomi» (ola, Anton inclinada y el punto de la i en azul), armado con la tipografía para que se vea nítido y siga el modo oscuro.
+  function firma() {
+    return '<p class="sign"><span class="wm" role="img" aria-label="Tomi">' +
+      '<svg class="sw" viewBox="0 0 100 80" aria-hidden="true"><path d="M4 50 C 24 18, 40 18, 52 40 S 80 62, 96 30"/></svg>' +
+      '<span class="w" aria-hidden="true">Tom<span class="i">ı<i class="d"></i></span></span></span></p>';
+  }
   function cardWelcome(cartel) {
     var first = (nombreLink || "").split(" ")[0];
     var hola = first ? "Hola, " + first + "." : "Hola.";
@@ -152,7 +158,7 @@
         ? '<h1 class="q" tabindex="-1" aria-label="' + esc(hola) + '"><span aria-hidden="true">' + letters(hola) + "</span></h1>"
         : '<h1 class="q" tabindex="-1">' + words(hola) + "</h1>") +
       '<p class="lead">Antes de armar tu estrategia de marca personal quiero conocerte un poco. Son 5 minutos. Si ninguna opción te representa, tocá «Otro» y escribilo a tu manera.</p>' +
-      '<p class="sign">— Tomi</p>' +
+      firma() +
       (hadDraft ? '<button type="button" class="restart" id="restartBtn">Empezar de nuevo</button>' : "") +
       (touch
         ? '<p class="tip"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 7.5L12 3l5 4.5M7 16.5l5 4.5 5-4.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>Deslizá hacia arriba para seguir y hacia abajo para volver.</p>'
@@ -182,7 +188,7 @@
     return '<svg class="done-mark" viewBox="0 0 92 92" aria-hidden="true"><circle cx="46" cy="46" r="46"/><path d="M27 47l13 13 25-27"/></svg>' +
       '<h1 class="q" tabindex="-1">' + words("Respuestas guardadas.") + "</h1>" +
       '<p class="lead">Gracias. Te escribo lo antes posible.</p>' +
-      '<p class="sign">— Tomi</p>';
+      firma();
   }
 
   var current = null, busy = false, autoT = null;
