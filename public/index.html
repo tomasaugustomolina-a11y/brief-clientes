@@ -71,14 +71,13 @@ button { font: inherit; color: inherit; }
 }
 
 /* Arriba: firma, tema y en qué sección estás */
-.top { padding: 14px var(--gutter-r) 0 var(--gutter-l); display: grid; grid-template-columns: 1fr auto; align-items: center; row-gap: 12px; }
-.brand { font-family: var(--display); font-size: 26px; line-height: 1; letter-spacing: 0.01em; }
+.top { padding: 14px var(--gutter-r) 0 var(--gutter-l); display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 16px; }
 .theme {
   width: 44px; height: 44px; border-radius: 50%; cursor: pointer;
   border: 2px solid var(--ink); background: transparent; display: grid; place-items: center;
 }
 .theme svg { width: 18px; height: 18px; }
-.where { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 8px; }
+.where { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .sec { font-weight: 700; font-size: 18px; line-height: 24px; height: 24px; overflow: hidden; display: flex; justify-content: space-between; gap: 12px; }
 .sec .part { color: var(--muted); font-size: 16px; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .sec span { display: block; }
@@ -141,7 +140,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   .card { gap: 14px; padding-top: 20px; }
 }
 /* Teclado abierto: se esconde la firma para dejar lugar a la pregunta, el campo y el botón. */
-.app.tight .brand, .app.tight .theme { display: none; }
+.app.tight .theme { display: none; }
 .app.tight .top { padding-top: 8px; }
 .app.tight .card { padding-top: 14px; padding-bottom: 14px; gap: 12px; }
 .app.tight .q { font-size: clamp(28px, 8vw, 40px); }
@@ -192,14 +191,13 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand">Tomi</div>
+    <div class="where" id="where">
+      <div class="sec"><span id="secName" aria-live="polite"></span><span class="part" id="secPart"></span></div>
+      <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    </div>
     <button type="button" class="theme" id="themeBtn" aria-label="Cambiar a modo oscuro">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
     </button>
-    <div class="where" id="where">
-      <div class="sec"><span id="secName" aria-live="polite">Bienvenida</span><span class="part" id="secPart"></span></div>
-      <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
-    </div>
   </header>
   <main class="stage" id="stage"></main>
   <footer class="foot" id="foot">
@@ -299,8 +297,7 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   function cardWelcome() {
     var first = (nombreLink || "").split(" ")[0];
     return '<h1 class="q" tabindex="-1">' + words(first ? "Hola, " + first + "." : "Hola.") + "</h1>" +
-      '<p class="lead">Antes de armar tu estrategia de marca personal quiero conocerte un poco. Son ' + FLOW.length + " preguntas cortas y llevan unos 5 minutos.</p>" +
-      '<p class="lead">Si ninguna opción te representa, tocá «Otro» y escribilo a tu manera.</p>' +
+      '<p class="lead">Antes de armar tu estrategia de marca personal quiero conocerte un poco. Son 5 minutos. Si ninguna opción te representa, tocá «Otro» y escribilo a tu manera.</p>' +
       (hadDraft ? '<button type="button" class="restart" id="restartBtn">Empezar de nuevo</button>' : "");
   }
   function cardQuestion(q) {
@@ -334,9 +331,9 @@ textarea.line { resize: none; min-height: 132px; line-height: 1.35; font-size: 2
   function chrome() {
     var i = st.i;
     if (i === -1) {
-      secName.textContent = "Bienvenida"; secPart.textContent = ""; barFill.style.width = "0%";
+      secName.textContent = ""; secPart.textContent = ""; barFill.style.width = "0%";
       backBtn.hidden = true; nextBtn.textContent = hadDraft ? "Seguir donde quedé" : "Empezar";
-      nextBtn.setAttribute("aria-disabled", "false"); foot.hidden = false; where.style.visibility = "visible";
+      nextBtn.setAttribute("aria-disabled", "false"); foot.hidden = false; where.style.visibility = "hidden";
       return;
     }
     if (i >= FLOW.length) { foot.hidden = true; where.style.visibility = "hidden"; return; }
