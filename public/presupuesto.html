@@ -90,7 +90,7 @@ h2 {
 .row-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
 .row-name { font-weight: 700; font-size: 20px; }
 .row-val { font-family: var(--display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.row-note { margin: 2px 0 10px; color: var(--muted); font-size: 16px; }
+.row-note { margin: 2px 0 10px; min-height: 1.45em; color: var(--muted); font-size: 16px; }
 
 input[type="range"] {
   --pct: 0%;
@@ -137,7 +137,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
 
 /* Detalle y condiciones */
 .detail { margin: 0; padding: 0; list-style: none; }
-.detail li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--veil); font-size: 18px; }
+.detail li { display: block; padding: 8px 0; border-bottom: 1px solid var(--veil); font-size: 18px; }
 .detail li span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .conds { margin: 18px 0 0; padding-left: 1.1em; font-size: 17px; }
 .conds li { margin-bottom: 6px; }
@@ -151,7 +151,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   padding: 12px var(--gutter-r) max(14px, env(safe-area-inset-bottom, 0px)) var(--gutter-l);
   transition: background-color .3s;
 }
-.total-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 4px 12px; }
+.total-in { max-width: 640px; margin: 0 auto; display: grid; grid-template-columns: 1fr; align-items: end; gap: 4px 12px; }
 .t-label { font-size: 16px; color: var(--muted); grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; }
 .t-pack { color: var(--electric-text); font-weight: 700; }
 .t-usd { white-space: nowrap; font-family: var(--display); font-size: clamp(36px, 11vw, 56px); line-height: 1; font-variant-numeric: tabular-nums; }
@@ -175,15 +175,15 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   </header>
 
   <h1 id="title">Armá tu plan</h1>
-  <p class="lead">Mové las barras y mirá cuánto sale por mes. Es un punto de partida: después lo ajustamos juntos a lo que necesitás.</p>
+  <p class="lead">Elegí cuánto contenido querés por mes y mirá el total. Es un punto de partida: después lo ajustamos juntos.</p>
   <p class="sign">— Tomi</p>
 
   <section aria-labelledby="h-packs">
     <h2 id="h-packs">Empezá por un paquete</h2>
-    <p class="sub">O armalo desde cero más abajo.</p>
+    <p class="sub">O armalo a tu medida más abajo.</p>
     <div class="packs">
-      <button type="button" class="pack" data-pack="esencial" aria-pressed="false"><b>Esencial</b><span id="p-esencial"></span></button>
-      <button type="button" class="pack" data-pack="completo" aria-pressed="false"><b>Completo</b><span id="p-completo"></span></button>
+      <button type="button" class="pack" data-pack="esencial" aria-pressed="false"><b>Esencial</b><span>Para arrancar con constancia</span></button>
+      <button type="button" class="pack" data-pack="completo" aria-pressed="false"><b>Completo</b><span>Marca, contenido y web</span></button>
     </div>
   </section>
 
@@ -192,22 +192,21 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     <p class="sub">Elegí un monto por mes y te armo la mejor combinación que entra.</p>
     <div class="row">
       <div class="row-head"><span class="row-name">Por mes</span><span class="row-val" id="v-budget"></span></div>
-      <p class="row-note" id="n-budget"></p>
-      <input type="range" id="budget" min="100" max="600" step="10" value="250" aria-labelledby="h-budget">
+      <input type="range" id="budget" aria-labelledby="h-budget">
     </div>
     <button type="button" class="btn solid budget-go" id="budgetGo">Armame el plan</button>
     <p class="fit" id="fit" aria-live="polite"></p>
   </section>
 
   <section aria-labelledby="h-content">
-    <h2 id="h-content">Contenido por semana</h2>
+    <h2 id="h-content">Contenido por mes</h2>
     <p class="sub">Incluye idea, guion, edición y publicación.</p>
     <div id="sliders"></div>
   </section>
 
   <section aria-labelledby="h-extras">
     <h2 id="h-extras">Extras</h2>
-    <p class="sub">Se hacen una sola vez y se reparten en los primeros 3 meses.</p>
+    <p class="sub">Se hacen una sola vez, al empezar.</p>
     <div id="extras"></div>
     <p class="incl"><b>Siempre incluido:</b> estrategia base (pilares de contenido, tono y calendario) el primer mes.</p>
   </section>
@@ -216,9 +215,9 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     <h2 id="h-detail">Tu plan</h2>
     <ul class="detail" id="detail"></ul>
     <ul class="conds">
-      <li>Mínimo 3 meses.</li>
-      <li>1 ronda de cambios por pieza.</li>
-      <li>El precio está en dólares y se paga en pesos al dólar del día de la factura.</li>
+      <li>Trabajamos con un mínimo de 3 meses, para que el contenido tenga tiempo de dar resultados.</li>
+      <li>Cada pieza incluye una ronda de cambios.</li>
+      <li>El total se actualiza con el dólar de cada mes.</li>
     </ul>
     <div class="actions">
       <button type="button" class="btn solid" id="waBtn">Mandármelo por WhatsApp</button>
@@ -232,34 +231,33 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   <div class="total-in">
     <div class="t-label"><span>Tu plan por mes</span><span class="t-pack" id="tPack"></span></div>
     <div class="t-usd" id="tUsd"></div>
-    <div class="t-ars"><b id="tArs"></b><span id="tRate"></span></div>
   </div>
 </div>
 
 <script>
 (function () {
-  /* ---------- Precios (editá acá) ---------- */
+  /* ---------- Precios internos en USD (el cliente solo ve el total en pesos) ---------- */
   var PRECIOS = {
-    reel: 25,       // USD por reel
-    carrusel: 15,   // USD por carrusel o post
-    historia: 2     // USD por historia (foto)
+    reelSolo: 25,   // si pide un solo reel en el mes
+    reel: 15,       // cada reel cuando pide 2 o más
+    carrusel: 15,   // carrusel o post
+    historia: 2     // historia (foto)
   };
   var EXTRAS = [
     { id: "manual", nombre: "Manual de marca completo", nota: "Colores, tipografías, tono y usos", usd: 120 },
     { id: "landing", nombre: "Landing / portfolio web", nota: "Tu página propia, lista para compartir", usd: 100 }
   ];
-  var MESES_EXTRAS = 3;   // los extras se reparten en este mínimo de meses
-  var SEMANAS = 4;        // semanas que se cobran por mes
+  var MESES_EXTRAS = 3;   // los extras se reparten en los 3 meses mínimos
   var MINIMO = 100;       // abono mínimo en USD
   var DOLAR = 1570;       // dólar por defecto; se cambia con ?dolar=1600 en el link
   var PAQUETES = {
-    esencial: { reel: 1, carrusel: 1, historia: 5, extras: [] },
-    completo: { reel: 1, carrusel: 2, historia: 7, extras: ["manual", "landing"] }
+    esencial: { reel: 4, carrusel: 4, historia: 20, extras: [] },
+    completo: { reel: 4, carrusel: 8, historia: 28, extras: ["manual", "landing"] }
   };
   var CONTENIDO = [
-    { id: "reel", nombre: "Reels", max: 5, una: "reel", varias: "reels" },
-    { id: "carrusel", nombre: "Carruseles o posts", max: 5, una: "carrusel", varias: "carruseles" },
-    { id: "historia", nombre: "Historias", max: 14, una: "historia", varias: "historias" }
+    { id: "reel", nombre: "Reels", max: 16, una: "reel", varias: "reels" },
+    { id: "carrusel", nombre: "Carruseles o posts", max: 20, una: "carrusel", varias: "carruseles" },
+    { id: "historia", nombre: "Historias", max: 60, una: "historia", varias: "historias" }
   ];
 
   var params = new URLSearchParams(location.search);
@@ -269,33 +267,27 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   var nombre = cliente.split(/\s+/)[0];
 
   var $ = function (id) { return document.getElementById(id); };
-  var fmtArs = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
-  var fmtUsd = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 2 });
-  var st = { reel: 1, carrusel: 1, historia: 5, extras: {} };
+  var fmt = new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 });
+  var st;
 
   if (nombre) { $("title").textContent = nombre + ", armá tu plan"; document.title = "Plan de " + nombre + " | Tomi"; }
 
   /* ---------- Cálculo ---------- */
-  function calc(s) {
-    var semanal = 0, lines = [];
-    CONTENIDO.forEach(function (c) {
-      var n = s[c.id] || 0; if (!n) return;
-      var mes = n * SEMANAS, usd = mes * PRECIOS[c.id];
-      semanal += usd;
-      lines.push([mes + " " + (mes === 1 ? c.una : c.varias) + " (" + n + " por semana)", usd]);
-    });
-    var extras = 0;
-    EXTRAS.forEach(function (e) {
-      if (!s.extras[e.id]) return;
-      var cuota = e.usd / MESES_EXTRAS; extras += cuota;
-      lines.push([e.nombre + " (USD " + e.usd + " en " + MESES_EXTRAS + " cuotas)", cuota]);
-    });
-    lines.push(["Estrategia base", 0]);
-    var bruto = semanal + extras;
-    var total = Math.max(MINIMO, Math.round(bruto / 5) * 5);
-    return { total: total, bruto: bruto, lines: lines };
+  function precioReels(n) { return n === 1 ? PRECIOS.reelSolo : n * PRECIOS.reel; }
+  function bruto(s) {
+    var usd = precioReels(s.reel) + s.carrusel * PRECIOS.carrusel + s.historia * PRECIOS.historia;
+    EXTRAS.forEach(function (e) { if (s.extras[e.id]) usd += e.usd / MESES_EXTRAS; });
+    return usd;
   }
-  function ars(usd) { return "$" + fmtArs.format(Math.round(usd * DOLAR / 1000) * 1000); }
+  function pesos(usd) { return Math.round(usd * DOLAR / 5000) * 5000; }
+  function total(s) { return pesos(Math.max(MINIMO, bruto(s))); }
+  function money(n) { return "$" + fmt.format(n); }
+  function semana(n) {
+    var w = n / 4;
+    if (!n) return "";
+    if (w < 1) return n === 1 ? "1 en el mes" : n + " en el mes";
+    return "≈ " + (Math.round(w * 2) / 2).toString().replace(".", ",") + " por semana";
+  }
   function samePack(s) {
     for (var k in PAQUETES) {
       var p = PAQUETES[k], ok = p.reel === s.reel && p.carrusel === s.carrusel && p.historia === s.historia;
@@ -310,63 +302,54 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
     return { reel: p.reel, carrusel: p.carrusel, historia: p.historia, extras: ex };
   }
 
-  /* La mejor combinación que entra en el presupuesto: la más cara que no se pasa,
-     y entre iguales, la más pareja (que no sea todo historias). */
-  function bestFor(budget) {
-    var best = null, hist = [0, 3, 5, 7, 10, 14];
-    var combos = [];
-    for (var m = 0; m < (1 << EXTRAS.length); m++) combos.push(m);
-    for (var r = 0; r <= 5; r++) for (var c = 0; c <= 5; c++) for (var h = 0; h < hist.length; h++) combos.forEach(function (m) {
+  /* La mejor combinación que entra en el presupuesto: la más completa que no se pasa,
+     y entre parecidas, la más pareja (reels y carruseles antes que solo historias). */
+  function bestFor(budgetArs) {
+    var best = null;
+    var hist = [0, 12, 20, 28, 40, 60], nExtras = 1 << EXTRAS.length;
+    for (var r = 0; r <= 16; r++) for (var c = 0; c <= 20; c++) for (var h = 0; h < hist.length; h++) for (var m = 0; m < nExtras; m++) {
+      if (r + c === 0) continue;
       var ex = {}; EXTRAS.forEach(function (e, i) { if (m & (1 << i)) ex[e.id] = true; });
       var s = { reel: r, carrusel: c, historia: hist[h], extras: ex };
-      if (r + c === 0) return;
-      var t = calc(s).bruto; if (t > budget || t < MINIMO * 0.9) return;
-      var balance = Math.min(r, 1) * 3 + Math.min(c, 2) + Math.min(hist[h], 5) / 5 + (r && c ? 2 : 0) - Math.abs(r * 2 - c) * 0.3;
-      var score = t + balance * 6;
-      if (!best || score > best.score) best = { s: s, score: score, t: t };
-    });
+      var t = bruto(s); if (pesos(t) > budgetArs || t < MINIMO * 0.9) continue;
+      var balance = Math.min(r, 4) * 0.8 + Math.min(c, 8) * 0.5 + Math.min(hist[h], 20) / 10 + (r && c ? 2 : 0) - Math.abs(r - c) * 0.15;
+      var score = t + balance * 5;
+      if (!best || score > best.score) best = { s: s, score: score };
+    }
     return best && best.s;
   }
 
   /* ---------- Pantalla ---------- */
-  function fill(el) {
-    var pct = (el.value - el.min) / (el.max - el.min) * 100;
-    el.style.setProperty("--pct", pct + "%");
-  }
-  var sliders = $("sliders");
+  function fill(el) { el.style.setProperty("--pct", ((el.value - el.min) / (el.max - el.min) * 100) + "%"); }
   CONTENIDO.forEach(function (c) {
     var row = document.createElement("div"); row.className = "row";
     row.innerHTML = '<div class="row-head"><label class="row-name" for="s-' + c.id + '">' + c.nombre + '</label><span class="row-val" id="v-' + c.id + '"></span></div>' +
       '<p class="row-note" id="n-' + c.id + '"></p>' +
       '<input type="range" id="s-' + c.id + '" min="0" max="' + c.max + '" step="1">';
-    sliders.appendChild(row);
+    $("sliders").appendChild(row);
     var input = row.querySelector("input");
     input.addEventListener("input", function () { st[c.id] = +input.value; render(true); });
   });
-  var extrasEl = $("extras");
   EXTRAS.forEach(function (e) {
     var b = document.createElement("button"); b.type = "button"; b.className = "extra"; b.setAttribute("aria-pressed", "false"); b.dataset.id = e.id;
-    b.innerHTML = "<b>" + e.nombre + "</b><small>" + e.nota + '</small><span class="price">USD ' + e.usd + "</span>";
+    b.innerHTML = "<b>" + e.nombre + "</b><small>" + e.nota + "</small>";
     b.addEventListener("click", function () { st.extras[e.id] = !st.extras[e.id]; render(true); });
-    extrasEl.appendChild(b);
+    $("extras").appendChild(b);
   });
   document.querySelectorAll(".pack").forEach(function (b) {
-    $("p-" + b.dataset.pack).textContent = "USD " + calc(packState(b.dataset.pack)).total + " por mes";
     b.addEventListener("click", function () { st = packState(b.dataset.pack); $("fit").textContent = ""; render(true); });
   });
 
   var budget = $("budget");
-  function renderBudget() {
-    $("v-budget").textContent = "USD " + budget.value;
-    $("n-budget").textContent = "≈ " + ars(+budget.value) + " por mes";
-    fill(budget);
-  }
+  var r10 = function (n) { return Math.ceil(n / 10000) * 10000; };
+  budget.min = r10(pesos(MINIMO)); budget.max = r10(pesos(600)); budget.step = 10000; budget.value = r10(pesos(250));
+  function renderBudget() { $("v-budget").textContent = money(+budget.value); fill(budget); }
   budget.addEventListener("input", renderBudget);
   $("budgetGo").addEventListener("click", function () {
     var s = bestFor(+budget.value);
     if (!s) { $("fit").textContent = "Con ese monto no llego a armar un plan; probá con un poco más."; return; }
     st = s; render(true);
-    $("fit").textContent = "Listo: te armé un plan de USD " + calc(st).total + " por mes. Podés ajustarlo abajo.";
+    $("fit").textContent = "Listo, te armé un plan. Podés ajustarlo abajo.";
   });
 
   var lastTotal = null;
@@ -375,42 +358,36 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
       var input = $("s-" + c.id), n = st[c.id];
       input.value = n; fill(input);
       $("v-" + c.id).textContent = n;
-      $("n-" + c.id).textContent = n ? (n * SEMANAS) + " por mes · USD " + PRECIOS[c.id] + " c/u" : "Sin " + c.varias;
+      $("n-" + c.id).textContent = n ? semana(n) : "Sin " + c.varias;
     });
     document.querySelectorAll(".extra").forEach(function (b) { b.setAttribute("aria-pressed", st.extras[b.dataset.id] ? "true" : "false"); });
     var pk = samePack(st);
     document.querySelectorAll(".pack").forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.pack === pk ? "true" : "false"); });
 
-    var r = calc(st);
-    $("tUsd").innerHTML = "USD " + r.total + " <small>/MES</small>";
-    $("tArs").textContent = ars(r.total);
-    $("tRate").textContent = "al dólar de hoy ($" + fmtArs.format(DOLAR) + ")";
+    var t = total(st);
+    $("tUsd").innerHTML = money(t) + " <small>/MES</small>";
     $("tPack").textContent = pk ? "Paquete " + pk.charAt(0).toUpperCase() + pk.slice(1) : "";
-    if (animate && lastTotal !== null && lastTotal !== r.total) {
+    if (animate && lastTotal !== null && lastTotal !== t) {
       var el = $("tUsd"); el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump");
     }
-    lastTotal = r.total;
+    lastTotal = t;
 
     var det = $("detail"); det.innerHTML = "";
-    r.lines.forEach(function (l) {
-      var li = document.createElement("li");
-      li.innerHTML = "<span></span><span></span>";
-      li.children[0].textContent = l[0];
-      li.children[1].textContent = l[1] ? "USD " + fmtUsd.format(l[1]) : "Incluida";
-      det.appendChild(li);
-    });
-    if (r.bruto < MINIMO) {
-      var li = document.createElement("li");
-      li.innerHTML = "<span>Abono mínimo</span><span>USD " + MINIMO + "</span>";
-      det.appendChild(li);
-    }
+    items().forEach(function (txt) { var li = document.createElement("li"); li.textContent = txt; det.appendChild(li); });
+  }
+  function items() {
+    var out = [];
+    CONTENIDO.forEach(function (c) { var n = st[c.id]; if (n) out.push(n + " " + (n === 1 ? c.una : c.varias) + " por mes"); });
+    EXTRAS.forEach(function (e) { if (st.extras[e.id]) out.push(e.nombre); });
+    out.push("Estrategia base");
+    return out;
   }
 
   function texto() {
-    var r = calc(st), pk = samePack(st);
+    var pk = samePack(st);
     var t = "Hola Tomi! " + (cliente ? "Soy " + cliente + ". " : "") + "Armé este plan" + (pk ? " (paquete " + pk + ")" : "") + ":\n";
-    r.lines.forEach(function (l) { t += "• " + l[0] + "\n"; });
-    t += "Total: USD " + r.total + " por mes (≈ " + ars(r.total) + " al dólar de $" + fmtArs.format(DOLAR) + ").";
+    items().forEach(function (l) { t += "• " + l + "\n"; });
+    t += "Total: " + money(total(st)) + " por mes.";
     return t;
   }
   $("waBtn").addEventListener("click", function () {
@@ -441,6 +418,7 @@ input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-
   });
   syncTheme();
 
+  st = packState("esencial");
   renderBudget();
   render(false);
 })();
