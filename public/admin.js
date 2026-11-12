@@ -25,8 +25,50 @@
       });
   }
 
+  /* Planes de la calculadora */
+  var planes = [];
+  var PIEZAS = [["reel", "reel", "reels"], ["carrusel", "carrusel", "carruseles"], ["historia", "historia", "historias"]];
+  var EXTRAS = { manual: "Manual de marca completo", landing: "Landing / portfolio web" };
+  function apiP(method, qs) {
+    return fetch("/api/planes" + (qs || ""), { method: method, headers: { authorization: "Bearer " + pass } })
+      .then(function (r) { if (!r.ok) throw new Error("http"); return r.json(); });
+  }
+  function loadPlanes() {
+    return apiP("GET").then(function (d) { planes = d.planes || []; renderPlanes(); })
+      .catch(function () { $("pList").innerHTML = '<p class="muted">No se pudieron cargar los planes.</p>'; });
+  }
+  function renderPlanes() {
+    $("pCount").textContent = planes.length === 1 ? "1 plan" : planes.length + " planes";
+    if (!planes.length) { $("pList").innerHTML = '<div class="empty"><p class="muted">Todavía nadie mandó un plan desde la calculadora.</p></div>'; return; }
+    $("pList").innerHTML = planes.map(function (r) {
+      var pl = r.plan || {}, items = [];
+      PIEZAS.forEach(function (p) { var n = Number(pl[p[0]]) || 0; if (n) items.push(n + " " + (n === 1 ? p[1] : p[2]) + " por mes"); });
+      (pl.extras || []).forEach(function (e) { if (EXTRAS[e]) items.push(EXTRAS[e]); });
+      return '<details><summary><strong>' + esc(r.nombre || "Sin nombre") + '</strong><span class="when">' + esc(fecha(r.creado)) + '</span>' +
+        '<span class="what">' + esc(items.slice(0, 3).join(" · ") || "Sin contenido") + (pl.paquete ? " · paquete " + esc(pl.paquete) : "") + '</span></summary>' +
+        '<div class="detail"><dl><dt>Contacto</dt><dd>' + esc(pl.contacto || "") + '</dd>' +
+        '<dt>Plan</dt><dd>' + items.map(esc).join("<br>") + '</dd>' +
+        '<dt>Tiempo que vio que se ahorra</dt><dd>≈ ' + esc(r.horas || 0) + ' h por mes</dd>' +
+        (pl.link ? '<dt>Link</dt><dd>' + esc(pl.link) + '</dd>' : "") + '</dl>' +
+        '<div class="row"><button class="btn small" type="button" data-pdel="' + esc(r.id) + '">Borrar este plan</button>' +
+        '<span data-pconfirm="' + esc(r.id) + '" hidden class="row"><button class="btn small blue" type="button" data-pyes="' + esc(r.id) + '">Sí, borrar</button><button class="btn small" type="button" data-pno="' + esc(r.id) + '">Cancelar</button></span></div>' +
+        '</div></details>';
+    }).join("");
+  }
+  $("pList").addEventListener("click", function (e) {
+    var b;
+    if ((b = e.target.closest("[data-pdel]"))) { b.hidden = true; document.querySelector('[data-pconfirm="' + b.getAttribute("data-pdel") + '"]').hidden = false; return; }
+    if ((b = e.target.closest("[data-pno]"))) { var id = b.getAttribute("data-pno"); document.querySelector('[data-pconfirm="' + id + '"]').hidden = true; document.querySelector('[data-pdel="' + id + '"]').hidden = false; return; }
+    if ((b = e.target.closest("[data-pyes]"))) {
+      var id2 = b.getAttribute("data-pyes"); b.disabled = true;
+      apiP("DELETE", "?id=" + encodeURIComponent(id2)).then(function () { planes = planes.filter(function (r) { return r.id !== id2; }); renderPlanes(); })
+        .catch(function () { b.disabled = false; $("panelMsg").textContent = "No se pudo borrar. Probá de nuevo."; });
+    }
+  });
+
   function load() {
     return api("GET").then(function (d) {
+      loadPlanes();
       rows = d.respuestas || [];
       try { sessionStorage.setItem("brief-admin", pass); } catch (e) {}
       $("login").hidden = true; $("panel").hidden = false; $("logoutBtn").hidden = false;
@@ -78,7 +120,7 @@
     try { sessionStorage.removeItem("brief-admin"); } catch (e) {}
     $("pass").value = ""; $("loginMsg").textContent = "";
     $("panel").hidden = true; $("login").hidden = false; $("logoutBtn").hidden = true;
-    $("list").innerHTML = "";
+    $("list").innerHTML = ""; planes = []; $("pList").innerHTML = "";
     $("pass").focus();
   });
 

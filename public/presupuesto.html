@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#FFFFFF">
+<title>Armá tu plan | Tomi</title>
+<meta name="description" content="Elegí cuánto contenido te imaginás por mes y mirá cuánto tiempo te ahorro.">
+<meta property="og:title" content="Armá tu plan de redes">
+<meta property="og:description" content="Elegí cuánto contenido te imaginás por mes y mirá cuánto tiempo te ahorro.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Tinos:ital,wght@0,400;0,700;1,400&display=swap">
+<script src="/tema.js"></script>
+<style>
+/*
+  Calculadora de plan con la identidad de Tomi: papel blanco, tinta negra,
+  azul eléctrico solo en lo que el cliente está eligiendo. Una columna, y abajo fijo el tiempo que se ahorra.
+  No muestra precios: el presupuesto lo paso yo después. La lógica está en /presupuesto.js.
+*/
+:root {
+  --paper: #FFFFFF; --ink: #000000; --electric: #2323FF; --electric-text: #2323FF; --on-electric: #FFFFFF;
+  --muted: #5B5B66; --veil: rgba(0, 0, 0, 0.08);
+  --display: "Anton", Impact, "Arial Narrow", sans-serif;
+  --text: "Tinos", "Times New Roman", Times, serif;
+  --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
+  --gutter-l: max(20px, env(safe-area-inset-left, 0px));
+  --gutter-r: max(20px, env(safe-area-inset-right, 0px));
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --electric-text: #7C7CFF; --on-electric: #FFFFFF;
+    --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #000000; --ink: #FFFFFF; --electric: #4D4DFF; --electric-text: #7C7CFF; --on-electric: #FFFFFF;
+  --muted: #A3A3AD; --veil: rgba(255, 255, 255, 0.14); color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-bottom: 140px; scroll-padding-top: 16px; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--text); font-size: 19px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
+  transition: background-color .3s, color .3s;
+}
+button { font: inherit; color: inherit; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 640px; margin: 0 auto; padding: max(14px, env(safe-area-inset-top, 0px)) var(--gutter-r) 230px var(--gutter-l); }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.wm { display: inline-flex; align-items: center; gap: .06em; font-size: 40px; padding-top: .12em; line-height: 1; }
+.wm .sw { width: .62em; height: .5em; flex: none; overflow: visible; }
+.wm .sw path { fill: none; stroke: currentColor; stroke-width: 15; stroke-linecap: round; }
+.wm .w { font-family: var(--display); font-weight: 400; line-height: 1; display: inline-block; position: relative; letter-spacing: .01em; transform: skewX(-10deg); }
+.wm .i { position: relative; display: inline-block; }
+.wm .d { position: absolute; left: 50%; top: -.04em; width: .17em; height: .17em; border-radius: 50%; background: var(--electric); transform: translateX(-40%) skewX(10deg); }
+.brand .wm { font-size: 28px; }
+.theme { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 2px solid var(--ink); background: transparent; display: grid; place-items: center; }
+.theme svg { width: 18px; height: 18px; }
+
+h1 {
+  margin: 28px 0 12px; font-family: var(--display); font-weight: 400;
+  font-size: clamp(44px, 13vw, 72px); line-height: 0.95; text-transform: uppercase; text-wrap: balance;
+}
+.lead { margin: 0; font-size: 20px; max-width: 36ch; }
+.sign { margin: 6px 0 0; line-height: 1; }
+
+section { margin-top: 40px; }
+h2 {
+  margin: 0 0 6px; font-family: var(--display); font-weight: 400; font-size: 30px; line-height: 1.05;
+  text-transform: uppercase; letter-spacing: 0.01em;
+}
+.sub { margin: 0 0 18px; color: var(--muted); font-size: 17px; }
+
+/* Paquetes rápidos */
+.packs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pack {
+  cursor: pointer; text-align: left; background: transparent; border: 2px solid var(--ink); border-radius: 16px;
+  padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; min-height: 52px;
+  transition: background-color .18s, border-color .18s, color .18s, transform .18s var(--ease);
+}
+.pack b { font-family: var(--display); font-weight: 400; font-size: 22px; text-transform: uppercase; letter-spacing: 0.02em; }
+.pack span { font-size: 16px; }
+.pack:active { transform: scale(0.97); }
+.pack[aria-pressed="true"] { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
+@media (hover: hover) { .pack:hover { border-color: var(--electric); } }
+
+/* Deslizadores */
+.row { padding: 16px 0 18px; border-top: 2px solid var(--ink); }
+.row:last-child { border-bottom: 2px solid var(--ink); }
+.row-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.row-name { font-weight: 700; font-size: 20px; }
+.row-val { font-family: var(--display); font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 2ch; text-align: center; }
+.stepper { display: flex; align-items: center; gap: 8px; }
+.step {
+  width: 44px; height: 44px; flex: none; border-radius: 50%; cursor: pointer; border: 2px solid var(--ink);
+  background: transparent; display: grid; place-items: center; transition: transform .15s var(--ease), opacity .15s;
+}
+.step svg { width: 16px; height: 16px; }
+.step:active { transform: scale(0.92); }
+.step:disabled { opacity: 0.3; cursor: default; }
+@media (hover: hover) { .step:not(:disabled):hover { border-color: var(--electric); color: var(--electric-text); } }
+.row-do { margin: 2px 0 0; color: var(--muted); font-size: 16px; }
+.row-note { margin: 6px 0 6px; min-height: 1.45em; font-size: 17px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 12px; }
+.row-note .save { font-weight: 700; color: var(--electric-text); font-variant-numeric: tabular-nums; }
+
+input[type="range"] {
+  --pct: 0%;
+  -webkit-appearance: none; appearance: none; width: 100%; height: 44px; margin: 0; background: transparent; cursor: pointer;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 6px; border-radius: 3px;
+  background: linear-gradient(to right, var(--electric) 0 var(--pct), var(--veil) var(--pct) 100%);
+}
+input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--veil); }
+input[type="range"]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--electric); }
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 28px; height: 28px; margin-top: -11px; border-radius: 50%;
+  background: var(--paper); border: 3px solid var(--electric); transition: transform .15s var(--ease);
+}
+input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--paper); border: 3px solid var(--electric); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1.15); }
+input[type="range"]:focus-visible { outline: 3px solid var(--electric); outline-offset: 2px; border-radius: 4px; }
+
+.btn {
+  cursor: pointer; border-radius: 999px; min-height: 52px; padding: 0 22px; border: 2px solid var(--ink);
+  background: transparent; font-family: var(--display); font-size: 19px; letter-spacing: 0.03em; text-transform: uppercase;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn.solid { background: var(--ink); color: var(--paper); }
+.btn:active { transform: scale(0.98); }
+
+/* Extras */
+.extra {
+  width: 100%; cursor: pointer; text-align: left; background: transparent; border: 2px solid var(--ink); border-radius: 16px;
+  padding: 14px 16px; display: grid; grid-template-columns: 1fr auto; gap: 2px 14px; align-items: center; margin-bottom: 10px;
+  transition: background-color .18s, border-color .18s, color .18s;
+}
+.extra b { font-size: 19px; }
+.extra small { grid-column: 1; font-size: 16px; color: var(--muted); }
+.extra .tick { grid-row: 1 / span 2; grid-column: 2; width: 20px; height: 20px; display: none; }
+.extra[aria-pressed="true"] .tick { display: block; }
+.extra[aria-pressed="true"] { background: var(--electric); border-color: var(--electric); color: var(--on-electric); }
+.extra[aria-pressed="true"] small { color: var(--on-electric); opacity: 0.85; }
+@media (hover: hover) { .extra:hover { border-color: var(--electric); } }
+.incl { margin: 4px 0 0; font-size: 17px; }
+.incl b { color: var(--electric-text); }
+
+/* Detalle y condiciones */
+.detail { margin: 0; padding: 0; list-style: none; }
+.saved { margin: 0 0 18px; padding: 18px 18px 16px; border-radius: 16px; background: var(--electric); color: var(--on-electric); }
+.saved-k { margin: 0; font-size: 17px; }
+.saved-n { margin: 2px 0 6px; font-family: var(--display); font-size: clamp(52px, 17vw, 84px); line-height: 0.95; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.saved-eq { margin: 0; font-size: 18px; }
+.detail li { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--veil); font-size: 18px; }
+.detail li span:last-child { color: var(--muted); }
+.fine { margin: 10px 0 0; color: var(--muted); font-size: 16px; }
+.detail li span:last-child { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.conds { margin: 18px 0 0; padding-left: 1.1em; font-size: 17px; }
+.conds li { margin-bottom: 6px; }
+.actions { display: flex; flex-direction: column; gap: 10px; margin-top: 24px; }
+.copied { margin: 4px 0 0; font-weight: 700; color: var(--electric-text); min-height: 1.45em; }
+.form-title { margin: 0; font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.05; text-transform: uppercase; }
+.field { display: flex; flex-direction: column; gap: 2px; font-weight: 700; font-size: 18px; }
+.line {
+  width: 100%; font: inherit; font-weight: 400; font-size: 21px; color: var(--ink); background: transparent;
+  border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; padding: 10px 2px; outline: none;
+}
+.line::placeholder { color: var(--muted); opacity: 1; }
+.line:focus { border-bottom-color: var(--electric); }
+.line[aria-invalid="true"] { border-bottom-color: var(--electric); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.sent { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; outline: none; }
+.sent p { margin: 0; }
+.sent svg { width: 72px; height: 72px; }
+.sent circle { fill: var(--electric); }
+.sent path { fill: none; stroke: var(--on-electric); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Total fijo abajo */
+.total {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--paper);
+  border-top: 2px solid var(--ink);
+  padding: 12px var(--gutter-r) max(14px, env(safe-area-inset-bottom, 0px)) var(--gutter-l);
+  transition: background-color .3s;
+}
+.total-in { max-width: 600px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 12px; }
+.t-main { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.send { min-height: 52px; padding: 0 20px; white-space: nowrap; }
+.t-label { font-size: 16px; color: var(--muted); display: flex; flex-wrap: wrap; column-gap: 10px; }
+.t-pack { color: var(--electric-text); font-weight: 700; }
+.t-usd { white-space: nowrap; font-family: var(--display); text-transform: uppercase; font-size: clamp(30px, 9.5vw, 56px); line-height: 1; font-variant-numeric: tabular-nums; }
+.t-usd small { font-size: 0.45em; letter-spacing: 0.02em; }
+@media (max-width: 389px) { .send { padding: 0 16px; } }
+.bump { animation: bump .35s var(--ease); }
+@keyframes bump { 40% { transform: scale(1.04); } }
+@media (prefers-reduced-motion: reduce) { .bump { animation: none; } * { transition: none !important; } }
+
+.theme:focus-visible, .pack:focus-visible, .btn:focus-visible, .extra:focus-visible, .step:focus-visible { outline: 3px solid var(--electric); outline-offset: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand" id="brand"></div>
+    <button type="button" class="theme" id="themeBtn" aria-label="Cambiar a modo oscuro">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+    </button>
+  </header>
+
+  <h1 id="title">Armá tu plan</h1>
+  <p class="lead">Elegí cuánto contenido te imaginás por mes y mirá cuánto tiempo te ahorro. Cuando me lo mandes, te paso el presupuesto.</p>
+
+  <section aria-labelledby="h-packs">
+    <h2 id="h-packs">Empezá por un paquete</h2>
+    <p class="sub">O armalo a tu medida más abajo.</p>
+    <div class="packs">
+      <button type="button" class="pack" data-pack="esencial" aria-pressed="false"><b>Esencial</b><span>Crecimiento lento y constante</span></button>
+      <button type="button" class="pack" data-pack="acelerado" aria-pressed="false"><b>Acelerado</b><span>Un reel y una historia por día</span></button>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-content">
+    <h2 id="h-content">Contenido por mes</h2>
+    <p class="sub">Al lado de cada uno ves lo que hago yo y el tiempo que te ahorrás.</p>
+    <div id="sliders"></div>
+  </section>
+
+  <section aria-labelledby="h-extras">
+    <h2 id="h-extras">Extras</h2>
+    <p class="sub">Los hago una sola vez, al empezar.</p>
+    <div id="extras"></div>
+    <p class="incl"><b>Siempre incluyo:</b> la estrategia base (pilares de contenido, tono y calendario) el primer mes.</p>
+  </section>
+
+  <section aria-labelledby="h-detail">
+    <h2 id="h-detail">Tu plan</h2>
+    <div class="saved" role="status" aria-live="polite">
+      <p class="saved-k">Tiempo que te ahorro por mes</p>
+      <p class="saved-n" id="savedN"></p>
+      <p class="saved-eq" id="savedEq"></p>
+    </div>
+    <ul class="detail" id="detail"></ul>
+    <p class="fine">Las horas son un estimado de lo que le lleva hacer esto a alguien que no se dedica a las redes.</p>
+    <ul class="conds">
+      <li>Trabajo con un mínimo de 3 meses, que es el tiempo que el contenido necesita para empezar a dar resultados.</li>
+      <li><b>Una ronda de cambios por pieza:</b> antes de publicar te muestro cada pieza, me marcás de una sola vez todo lo que quieras ajustar (textos, cortes, música, colores) y lo corrijo.</li>
+      <li>El precio que te pase queda fijo durante 3 meses y después se actualiza por inflación.</li>
+    </ul>
+    <form class="actions" id="sendForm" novalidate>
+      <h3 class="form-title">Mandámelo y te paso el presupuesto</h3>
+      <label class="field"><span>¿Cómo te llamás?</span>
+        <input class="line" id="fNombre" type="text" autocomplete="name" maxlength="80" required>
+      </label>
+      <label class="field"><span>¿Por dónde te escribo?</span>
+        <input class="line" id="fContacto" type="text" autocomplete="tel" maxlength="120" placeholder="WhatsApp o mail" required>
+      </label>
+      <input class="hp" id="hp" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" class="btn solid" id="formBtn">Mandámelo</button>
+      <p class="copied" id="sendMsg" role="status" aria-live="polite"></p>
+    </form>
+    <div class="sent" id="sent" hidden tabindex="-1">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12"/><path d="M6.5 12.5l3.8 3.8 7.2-8"/></svg>
+      <p class="form-title" id="sentTitle">¡Listo! Ya me llegó tu plan.</p>
+      <p>Te escribo lo antes posible con el presupuesto.</p>
+      <p class="sign" id="sentSign"></p>
+    </div>
+  </section>
+</div>
+
+<div class="total">
+  <div class="total-in">
+    <div class="t-main">
+      <div class="t-label"><span>Te ahorro por mes</span><span class="t-pack" id="tPack"></span></div>
+      <div class="t-usd" id="tUsd"></div>
+    </div>
+    <button type="button" class="btn solid send" id="sendBtn">Mandámelo</button>
+  </div>
+</div>
+
+<script src="/presupuesto.js"></script>
+</body>
+</html>

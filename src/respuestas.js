@@ -7,10 +7,11 @@ const MIN = 60 * 1000;
 const LIMITES = {
   login: { max: 8, ventana: 15 * MIN }, // contraseñas equivocadas en /admin
   envio: { max: 6, ventana: 10 * MIN }, // respuestas enviadas
+  plan: { max: 6, ventana: 10 * MIN }, // planes mandados desde la calculadora
   chequeo: { max: 40, ventana: 10 * MIN }, // mails revisados antes de seguir
 };
 
-const json = (data, status = 200, extra = {}) =>
+export const json = (data, status = 200, extra = {}) =>
   new Response(JSON.stringify(data), {
     status,
     headers: {
@@ -44,12 +45,12 @@ async function prepararTabla(env) {
   tablaLista = true;
 }
 // La huella mezcla la IP con el secreto de /admin: sin ese secreto no se puede volver a la IP.
-async function huella(request, env) {
+export async function huella(request, env) {
   const ip = request.headers.get("cf-connecting-ip") || "local";
   return (await sha256Hex(String(env.ADMIN_PASSWORD || "brief-clientes") + "|" + ip)).slice(0, 32);
 }
 // Si la base falla acá, se deja pasar: el tope no tiene que romper el formulario.
-async function excedido(env, tipo, clave) {
+export async function excedido(env, tipo, clave) {
   try {
     await prepararTabla(env);
     const { max, ventana } = LIMITES[tipo];
@@ -62,7 +63,7 @@ async function excedido(env, tipo, clave) {
     return false;
   }
 }
-async function anotar(env, tipo, clave) {
+export async function anotar(env, tipo, clave) {
   try {
     await prepararTabla(env);
     const ahora = Date.now();
@@ -129,7 +130,7 @@ export async function dominioRecibeMail(env, dominio) {
   return res;
 }
 // Devuelve "" si el contacto sirve, o el motivo: "formato" o "dominio".
-async function problemaContacto(env, texto) {
+export async function problemaContacto(env, texto) {
   const c = leerContacto(texto);
   if (!c.ok) return "formato";
   if (c.tipo === "mail" && (await dominioRecibeMail(env, c.dominio)) === false) return "dominio";
@@ -148,7 +149,7 @@ export async function onRequestContacto({ request, env }) {
 
 // La contraseña de /admin vive como secreto ADMIN_PASSWORD en Cloudflare, nunca en el repositorio.
 // Devuelve null si está bien, o la respuesta de error a mandar.
-async function adminError(request, env) {
+export async function adminError(request, env) {
   const secret = String(env.ADMIN_PASSWORD || "").trim();
   if (!secret) return json({ error: "no_password_set" }, 503);
   const clave = await huella(request, env);
@@ -163,7 +164,7 @@ async function adminError(request, env) {
 }
 
 // Lee el cuerpo sin pasarse del máximo, aunque no venga declarado el tamaño. Devuelve null si se pasa.
-async function leerTexto(request, max) {
+export async function leerTexto(request, max) {
   if (!request.body) return "";
   const reader = request.body.getReader();
   const partes = [];
@@ -184,25 +185,30 @@ async function leerTexto(request, max) {
   return new TextDecoder().decode(todo);
 }
 
-export async function onRequestPost({ request, env }) {
-  // Solo el formulario de este mismo sitio puede mandar respuestas.
+// Lee un envío público: solo desde este mismo sitio, en JSON y sin pasarse del tamaño.
+// Devuelve { body } o { error } con la respuesta a mandar.
+export async function leerEnvio(request, max) {
   const origin = request.headers.get("origin");
   if (origin) {
     let igual = false;
     try { igual = new URL(origin).host === new URL(request.url).host; } catch {}
-    if (!igual) return json({ error: "bad_origin" }, 403);
+    if (!igual) return { error: json({ error: "bad_origin" }, 403) };
   }
-  if (!/^application\/json\b/i.test(request.headers.get("content-type") || "")) return json({ error: "bad_type" }, 415);
-  if (Number(request.headers.get("content-length") || 0) > MAX_BODY) return json({ error: "too_large" }, 413);
-
-  let body;
+  if (!/^application\/json\b/i.test(request.headers.get("content-type") || "")) return { error: json({ error: "bad_type" }, 415) };
+  if (Number(request.headers.get("content-length") || 0) > max) return { error: json({ error: "too_large" }, 413) };
   try {
-    const text = await leerTexto(request, MAX_BODY);
-    if (text === null) return json({ error: "too_large" }, 413);
-    body = JSON.parse(text);
+    const text = await leerTexto(request, max);
+    if (text === null) return { error: json({ error: "too_large" }, 413) };
+    return { body: JSON.parse(text) };
   } catch {
-    return json({ error: "bad_json" }, 400);
+    return { error: json({ error: "bad_json" }, 400) };
   }
+}
+
+export async function onRequestPost({ request, env }) {
+  const envio = await leerEnvio(request, MAX_BODY);
+  if (envio.error) return envio.error;
+  const body = envio.body;
   if (body && body.hp) return json({ ok: true }); // trampa para bots
   const r = body && body.respuestas;
   if (!r || typeof r !== "object" || Array.isArray(r)) return json({ error: "missing_answers" }, 400);

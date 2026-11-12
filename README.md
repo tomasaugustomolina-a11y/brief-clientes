@@ -26,3 +26,10 @@ Para probar el chequeo de mails en local sin internet, `DOH_URL` en `.dev.vars` 
 - De cada conexión se guarda solo una huella (no la IP), en la tabla `intentos`, y se borra al día.
 - Las páginas no usan scripts en línea ni de otros sitios (`public/_headers` lo exige con Content-Security-Policy). Si se agrega JavaScript, va en un archivo de `public/`.
 - El Excel se arma con SheetJS 0.18.5, copiado en `public/vendor/`.
+
+## Calculadora de plan (`/presupuesto`)
+
+Página para que el cliente elija cuánto contenido se imagina por mes. No muestra precios: muestra las horas que se ahorra, y el presupuesto lo paso yo después.
+
+- `public/presupuesto.html` y `public/presupuesto.js`: la página. Las horas por pieza se ajustan arriba de todo en `presupuesto.js` (`HORAS` y `PLANIFICAR`).
+- `src/presupuestos.js`: guarda cada plan en la tabla `planes` (`/api/planes`), con las mismas protecciones que el brief. Se ven en `/admin`, sección Planes.
